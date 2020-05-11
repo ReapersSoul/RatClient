@@ -9,7 +9,9 @@
 
 using namespace std;
 
-std::string windowName = "pic"; //Name of the window
+NetworkHandlerServer NH;
+string DesktopFeed = "Desktop Feed";
+string CamFeed = "Cam Feed";
 
 cv::Mat hwnd2mat(HWND hwnd) {
 
@@ -61,31 +63,230 @@ cv::Mat hwnd2mat(HWND hwnd) {
 }
 
 void rcv(NetworkHandlerServer NH) {
-    cv::VideoCapture cap(0);
-    HWND hDesktopWnd = GetDesktopWindow();
     DataType dt;
+    cv::Mat image;
+    INPUT in;
+
+    NH.AddDataType("DesktopIMG", 2);
+    NH.AddDataType("MousePos", 3);
+    NH.AddDataType("MouseDown", 4);
+    NH.AddDataType("MouseUp", 4);
+    NH.AddDataType("KeyDown", 5);
+    NH.AddDataType("KeyUp", 6);
+    NH.AddDataType("CamIMG", 7);
+    NH.AddDataType("SendFILE", 8);
+    NH.AddDataType("RecvFILE", 8);
+    NH.AddDataType("CMD", 9);
+    NH.AddDataType("EnableLogger", 10);
+    NH.AddDataType("DisableLogger", 11);
+    //NH.AddDataType("", 3);
+
+    NH.SendTypeList();
+
     while (true) {
         NH.RecvDataType(dt);
-        if (dt.Name == "DesktopIMG")
-        {
-            cv::Mat frame = hwnd2mat(hDesktopWnd);
-            NH.SendCVMat(frame);
-        }
-        else if (dt.Name == "DesktopCLICK") {
-            int x = NH.RecvDataT<int>();
-            int y = NH.RecvDataT<int>();
-            int clickType = NH.RecvDataT<int>();
-            //sim click
+        if (dt.Name == "MousePos") {
+            in.type = INPUT_MOUSE;
+            in.mi.dx = NH.RecvDataT<long>();
+            in.mi.dy = NH.RecvDataT<long>();
+            in.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+            in.mi.mouseData = 0;
+            in.mi.dwExtraInfo = 0;
+            in.mi.time = 0;
+
+            //keyboard stuff
+            in.ki.dwExtraInfo = NULL;
+            in.ki.dwFlags = NULL;
+            in.ki.time = NULL;
+            in.ki.wScan = NULL;
+            in.ki.wVk = NULL;
+
+            in.hi.uMsg = NULL;
+            in.hi.wParamH = NULL;
+            in.hi.wParamL = NULL;
+            //keyboard stuff
+
+            SendInput(1, &in, sizeof(INPUT));
 
         }
-        else if (dt.Name == "CamIMG") {
-            cv::Mat frame;
-            cap.read(frame);
-            NH.SendCVMat(frame);
+        else if (dt.Name == "MouseDown") {
+            int clickType = NH.RecvDataT<int>();
+            if (clickType == 1) {
+                in.type = INPUT_MOUSE;
+                in.mi.dx = 0;
+                in.mi.dy = 0;
+                in.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+                in.mi.mouseData = 0;
+                in.mi.dwExtraInfo = 0;
+                in.mi.time = 0;
+
+                //keyboard stuff
+                in.ki.dwExtraInfo = NULL;
+                in.ki.dwFlags = NULL;
+                in.ki.time = NULL;
+                in.ki.wScan = NULL;
+                in.ki.wVk = NULL;
+
+                in.hi.uMsg = NULL;
+                in.hi.wParamH = NULL;
+                in.hi.wParamL = NULL;
+                //keyboard stuff
+
+                SendInput(1, &in, sizeof(INPUT));
+            }
+            else if (clickType == 2) {
+                in.type = INPUT_MOUSE;
+                in.mi.dx = 0;
+                in.mi.dy = 0;
+                in.mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
+                in.mi.mouseData = 0;
+                in.mi.dwExtraInfo = 0;
+                in.mi.time = 0;
+
+                //keyboard stuff
+                in.ki.dwExtraInfo = NULL;
+                in.ki.dwFlags = NULL;
+                in.ki.time = NULL;
+                in.ki.wScan = NULL;
+                in.ki.wVk = NULL;
+
+                in.hi.uMsg = NULL;
+                in.hi.wParamH = NULL;
+                in.hi.wParamL = NULL;
+                //keyboard stuff
+
+                SendInput(1, &in, sizeof(INPUT));
+            }
+            else if (clickType == 3) {
+                in.type = INPUT_MOUSE;
+                in.mi.dx = 0;
+                in.mi.dy = 0;
+                in.mi.dwFlags = MOUSEEVENTF_MIDDLEDOWN;
+                in.mi.mouseData = 0;
+                in.mi.dwExtraInfo = 0;
+                in.mi.time = 0;
+
+                //keyboard stuff
+                in.ki.dwExtraInfo = NULL;
+                in.ki.dwFlags = NULL;
+                in.ki.time = NULL;
+                in.ki.wScan = NULL;
+                in.ki.wVk = NULL;
+
+                in.hi.uMsg = NULL;
+                in.hi.wParamH = NULL;
+                in.hi.wParamL = NULL;
+                //keyboard stuff
+
+                SendInput(1, &in, sizeof(INPUT));
+            }
+
+
         }
-        else if (dt.Name == "FILE") {
-            string path = NH.RecvDataT<string>();
-            NH.SendFile(path,100000);
+        else if (dt.Name == "MouseUp") {
+            int clickType = NH.RecvDataT<int>();
+            if (clickType == 1) {
+                in.type = INPUT_MOUSE;
+                in.mi.dx = 0;
+                in.mi.dy = 0;
+                in.mi.dwFlags = MOUSEEVENTF_LEFTUP;
+                in.mi.mouseData = 0;
+                in.mi.dwExtraInfo = 0;
+                in.mi.time = 0;
+
+                //keyboard stuff
+                in.ki.dwExtraInfo = NULL;
+                in.ki.dwFlags = NULL;
+                in.ki.time = NULL;
+                in.ki.wScan = NULL;
+                in.ki.wVk = NULL;
+
+                in.hi.uMsg = NULL;
+                in.hi.wParamH = NULL;
+                in.hi.wParamL = NULL;
+                //keyboard stuff
+
+                SendInput(1, &in, sizeof(INPUT));
+            }
+            else if (clickType == 2) {
+                in.type = INPUT_MOUSE;
+                in.mi.dx = 0;
+                in.mi.dy = 0;
+                in.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
+                in.mi.mouseData = 0;
+                in.mi.dwExtraInfo = 0;
+                in.mi.time = 0;
+
+                //keyboard stuff
+                in.ki.dwExtraInfo = NULL;
+                in.ki.dwFlags = NULL;
+                in.ki.time = NULL;
+                in.ki.wScan = NULL;
+                in.ki.wVk = NULL;
+
+                in.hi.uMsg = NULL;
+                in.hi.wParamH = NULL;
+                in.hi.wParamL = NULL;
+                //keyboard stuff
+
+                SendInput(1, &in, sizeof(INPUT));
+            }
+            else if (clickType == 3) {
+                in.type = INPUT_MOUSE;
+                in.mi.dx = 0;
+                in.mi.dy = 0;
+                in.mi.dwFlags = MOUSEEVENTF_MIDDLEUP;
+                in.mi.mouseData = 0;
+                in.mi.dwExtraInfo = 0;
+                in.mi.time = 0;
+
+                //keyboard stuff
+                in.ki.dwExtraInfo = NULL;
+                in.ki.dwFlags = NULL;
+                in.ki.time = NULL;
+                in.ki.wScan = NULL;
+                in.ki.wVk = NULL;
+
+                in.hi.uMsg = NULL;
+                in.hi.wParamH = NULL;
+                in.hi.wParamL = NULL;
+                //keyboard stuff
+
+                SendInput(1, &in, sizeof(INPUT));
+            }
+        }
+        else if (dt.Name == "KeyDown") {
+            // Set up a generic keyboard event.
+            in.type = INPUT_KEYBOARD;
+            in.ki.wScan = 0; // hardware scan code for key
+            in.ki.time = 0;
+            in.ki.dwExtraInfo = 0;
+
+            // Press the "A" key
+            in.ki.wVk = NH.RecvDataT<WORD>();; // virtual-key code for the "a" key
+            in.ki.dwFlags = 0; // 0 for key press
+            SendInput(1, &in, sizeof(INPUT));
+
+        }
+        else if (dt.Name == "KeyUp") {
+            // Set up a generic keyboard event.
+            in.type = INPUT_KEYBOARD;
+            in.ki.wScan = 0; // hardware scan code for key
+            in.ki.time = 0;
+            in.ki.dwExtraInfo = 0;
+
+            // Press the "A" key
+            in.ki.wVk = NH.RecvDataT<WORD>();; // virtual-key code for the "a" key
+            in.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+            SendInput(1, &in, sizeof(INPUT));
+        }
+        else if (dt.Name == "SendFILE") {
+            std::string path = NH.RecvDataT<std::string>();
+            NH.RecvFile(path);
+        }
+        else if (dt.Name == "RecvFILE") {
+            std::string path = NH.RecvDataT<std::string>();
+            NH.SendFile(path, 10000);
         }
         else if (dt.Name == "CMD") {
             string command = NH.RecvDataT<std::string>();
@@ -94,15 +295,21 @@ void rcv(NetworkHandlerServer NH) {
         else if (dt.Name == "DataTypeList") {
             NH.RecvTypeList();
         }
+        else if (dt.Name == "DesktopIMG")
+        {
+           //send desktop image
+
+        }
+        else if (dt.Name == "CamIMG") {
+            //send cam image
+        }
 
     }
-
 }
 
 
 int main()
 {
-    NetworkHandlerServer NH;
 
     thread recvThread;
 

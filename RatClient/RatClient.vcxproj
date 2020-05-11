@@ -154,12 +154,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\ConsoleHelper\ConsoleLogger.cpp" />
     <ClCompile Include="..\WinNetlib\NetworkBase.cpp" />
     <ClCompile Include="..\WinNetlib\NetworkHandlerClient.cpp" />
     <ClCompile Include="..\WinNetlib\NetworkHandlerServer.cpp" />
     <ClCompile Include="RatClient.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\ConsoleHelper\ConsoleLogger.h" />
     <ClInclude Include="..\WinNetlib\NetworkBase.h" />
     <ClInclude Include="..\WinNetlib\NetworkHandlerClient.h" />
     <ClInclude Include="..\WinNetlib\NetworkHandlerServer.h" />
