@@ -166,7 +166,7 @@ public:
 		return FindType(name);
 	}
 
-	typedef typename vector<DataType> array_type;
+	typedef typename std::vector<DataType> array_type;
 	typedef typename array_type::iterator iterator;
 	typedef typename array_type::const_iterator const_iterator;
 
