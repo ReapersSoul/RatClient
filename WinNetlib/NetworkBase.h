@@ -52,7 +52,7 @@ private:
 public:
 
 	DataTypeList() {
-		AddType("invalid",0);
+		AddType("Invalid",0);
 		AddType("DataTypeList", 1);
 	}
 
