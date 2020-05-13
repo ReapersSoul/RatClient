@@ -119,20 +119,18 @@ void rcv() {
             NH.RecvDataT<int>(&awnser);
 
             if (awnser == 1) {
-                string line;
-                getline(cin, line);
-                printf("%c[2K", 27);
-                printf("Answer is yes\n");
+                printf("\r%c[2K", 27);
+                printf("Answer is yes.\n");
                 SetConsoleTextAttribute(hConsole, 10);
-                printf("%s", line);
+                printf("Enter command: ");
                 SetConsoleTextAttribute(hConsole, 7);
             }
             else {
                 printf("\r%c[2K", 27);
-                printf("Answer is no\n");
+                printf("Answer is no.\n");
                 SetConsoleTextAttribute(hConsole, 10);
                 printf("Enter command: ");
-                SetConsoleTextAttribute(hConsole, 10);
+                SetConsoleTextAttribute(hConsole, 7);
             }
         }
         else {
