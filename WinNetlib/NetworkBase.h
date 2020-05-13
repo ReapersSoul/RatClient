@@ -244,14 +244,14 @@ public:
 		//send size
 		iResult = send(ConnectedSocket, reinterpret_cast<char*>(&size), sizeof(int), 0);
 		if (iResult == SOCKET_ERROR) {
-			printf("send failed: %d\n", WSAGetLastError());
+			//printf("send failed: %d\n", WSAGetLastError());
 			return false;
 		}
 
 		//send data
 		iResult = send(ConnectedSocket, data, size, 0);
 		if (iResult == SOCKET_ERROR) {
-			printf("send failed: %d\n", WSAGetLastError());
+			//printf("send failed: %d\n", WSAGetLastError());
 			return false;
 		}
 		Sleep(100);
@@ -268,6 +268,12 @@ public:
 		return SendData((char*)s.c_str(), s.size() + 1);
 	}
 
+	template<>
+	bool SendDataT<std::wstring>(std::wstring s) {
+		return SendData((char*)s.c_str(), s.capacity()*sizeof(wchar_t));
+	}
+
+
 	bool RecvData(char** data)
 	{
 
@@ -282,7 +288,7 @@ public:
 		else if (iResult == 0)
 			printf("Connection closed\n");
 		else {
-			printf("recv failed: %d\n", WSAGetLastError());
+			//printf("recv failed: %d\n", WSAGetLastError());
 			return false;
 		}
 
@@ -295,7 +301,7 @@ public:
 		else if (iResult == 0)
 			printf("Connection closed\n");
 		else {
-			printf("recv failed: %d\n", WSAGetLastError());
+			//printf("recv failed: %d\n", WSAGetLastError());
 			return false;
 		}
 
@@ -306,27 +312,43 @@ public:
 	}
 
 	template<typename T>
-	T RecvDataT()
+	bool RecvDataT(T * item)
 	{
 		char* data = nullptr;
 
-		RecvData(&data);
+		if (!RecvData(&data)) {
+			return NULL;
+		}
 
 		T* ret = reinterpret_cast<T*>(data);
 
-		return *ret;
+		*item = *ret;
 	}
 
 	template<>
-	std::string RecvDataT<std::string>()
+	bool RecvDataT<std::string>(std::string * s)
 	{
 		char* data = nullptr;
 
-		RecvData(&data);
+		if (RecvData(&data)) {
 
-		std::string ret = data;
+			*s = data;
+			return true;
+		}
+		return false;
+	}
 
-		return ret;
+	template<>
+	bool RecvDataT<std::wstring>(std::wstring* s)
+	{
+		char* data = nullptr;
+
+		if (RecvData(&data)) {
+
+			*s = (wchar_t *)data;
+			return true;
+		}
+		return false;
 	}
 
 	bool SendBatchData(char* data, int size, int packetSize) {
@@ -360,10 +382,22 @@ public:
 
 	bool RecvBatchData(char** data) {
 
-		int size = RecvDataT<int>();
-		int numOfPackets = RecvDataT<int>();
-		int packetSize = RecvDataT<int>();
-		int lastPackSize = RecvDataT<int>();
+		int size;
+		if (!RecvDataT<int>(&size)) {
+			return false;
+		}
+		int numOfPackets;
+		if (!RecvDataT<int>(&numOfPackets)) {
+			return false;
+		}
+		int packetSize;
+		if (!RecvDataT<int>(&packetSize)) {
+			return false;
+		}
+		int lastPackSize;
+		if (!RecvDataT<int>(&lastPackSize)) {
+			return false;
+		}
 
 		char* ret;
 		ret = new char[(numOfPackets * packetSize) + lastPackSize];
@@ -451,10 +485,22 @@ public:
 		std::ofstream out(path, std::ios::binary);
 
 		if (out.is_open() && out.good()) {
-			int length = RecvDataT<int>();
-			int PackSize = RecvDataT<int>();
-			int numOfPackets = RecvDataT<int>();
-			int lastPackSize = RecvDataT<int>();
+			int length;
+			if (!RecvDataT<int>(&length)) {
+				return false;
+			}
+			int PackSize;
+			if (!RecvDataT<int>(&PackSize)) {
+				return false;
+			}
+			int numOfPackets;
+			if (!RecvDataT<int>(&numOfPackets)) {
+				return false;
+			}
+			int lastPackSize;
+			if (!RecvDataT<int>(&lastPackSize)) {
+				return false;
+			}
 
 			int bytesRecived = 0;
 
@@ -491,10 +537,18 @@ public:
 	}
 
 	bool RecvTypeList() {
-		int size = RecvDataT<int>();
+		int size;
+		if (!RecvDataT<int>(&size)) {
+			return false;
+		}
 		for (int i = 0; i < size; i++)
 		{
-			DataTypes.AddType(RecvDataT<DataType>());
+			DataType dt;
+			if (!RecvDataT<DataType>(&dt)) {
+				return false;
+			}
+
+			DataTypes.AddType(dt);
 		}
 		return true;
 	}
@@ -519,14 +573,15 @@ public:
 			return SendDataT<int>(DataTypes.FindType(DataType(s, identity)).Identity);
 	}
 
-	bool RecvDataType(DataType s) {
-		int identity = RecvDataT<int>();
+	bool RecvDataType(DataType * s) {
+		int identity;
+		RecvDataT<int>(&identity);
 		if (DataTypes.TypeExists(identity)) {
-			s = DataTypes.FindType(identity);
+			*s = DataTypes.FindType(identity);
 			return true;
 		}
 		else {
-			s = DataTypes.FindType(0);
+			*s = DataTypes.FindType(0);
 			return false;
 		}
 	}
@@ -565,17 +620,25 @@ public:
 		return false;
 	}
 
-	bool RecvCVMat(cv::Mat * img) {
-		int rows = RecvDataT<int>();
-		int cols = RecvDataT<int>();
-
+	bool RecvCVMat(cv::Mat* img) {
+		int rows;
+		if (!RecvDataT<int>(&rows)) {
+			return false;
+		}
+		int cols;
+		if (!RecvDataT<int>(&cols)) {
+			return false;
+		}
 		char* data = nullptr;
 
 		if (!RecvData(&data)) {
 			return false;
 		}
 
-		int imgtype = RecvDataT<int>();
+		int imgtype;
+		if (!RecvDataT<int>(&imgtype)) {
+			return false;
+		}
 
 		*img = cv::Mat(rows, cols, imgtype, data);
 

