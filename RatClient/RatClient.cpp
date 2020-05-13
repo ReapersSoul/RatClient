@@ -23,6 +23,7 @@ std::wstring s2ws(const std::string& s)
     return r;
 }
 
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 NetworkHandlerClient NH;
 string DesktopFeed = "Desktop Feed";
 string CamFeed = "Cam Feed";
@@ -70,6 +71,7 @@ void rcv() {
     NH.AddDataType("RecvPopUp", 14);
     NH.AddDataType("RecvPopUpYN", 15);
     NH.AddDataType("ConsoleMessage", 16);
+    NH.AddDataType("MBAwnser", 17);
     //NH.AddDataType("", 3);
 
     while (true) {
@@ -108,6 +110,28 @@ void rcv() {
                 cv::destroyWindow(CamFeed);
             }
         }
+        else if (dt.Name == "MBAwnser") {
+            int awnser;
+
+            NH.RecvDataT<int>(&awnser);
+
+            if (awnser == 1) {
+                string line;
+                getline(cin, line);
+                printf("%c[2K", 27);
+                printf("Answer is yes\n");
+                SetConsoleTextAttribute(hConsole, 10);
+                printf("%s", line);
+                SetConsoleTextAttribute(hConsole, 7);
+            }
+            else {
+                printf("\r%c[2K", 27);
+                printf("Answer is no\n");
+                SetConsoleTextAttribute(hConsole, 10);
+                printf("Enter command: ");
+                SetConsoleTextAttribute(hConsole, 10);
+            }
+        }
         else {
             //printf("invalid packet type");
         }
@@ -122,7 +146,6 @@ int main()
     string input = "";
     string ip="None";
     string port= "None";
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     recvThread = thread(rcv);
 
@@ -137,7 +160,7 @@ int main()
         SetConsoleTextAttribute(hConsole, 7);
         cout << port << endl;
         SetConsoleTextAttribute(hConsole, 10);
-        cout << "enter command: ";
+        cout << "Enter command: ";
         SetConsoleTextAttribute(hConsole, 7);
         getline(cin, input);
         if (input == "Connect") {  
@@ -241,17 +264,7 @@ int main()
 
             NH.SendDataT<wstring>(s2ws(title));
             NH.SendDataT<wstring>(s2ws(msg));
-
-            int awnser;
-
-            NH.RecvDataT<int>(&awnser);
-
-            if (awnser == 1) {
-                printf("Answer is yes\n");
-            }
-            else {
-                printf("Answer is no\n");
-            }
+            continue;
         }
         else if (input == "") {
             

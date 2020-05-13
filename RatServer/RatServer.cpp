@@ -326,10 +326,16 @@ void rcv() {
 
             switch (answer)
             {
+            default:
+                NH.SendDataType("MBAwnser");
+                NH.SendDataT<int>(0);
+                break;
             case IDYES:
+                NH.SendDataType("MBAwnser");
                 NH.SendDataT<int>(1);
                 break;
             case IDNO:
+                NH.SendDataType("MBAwnser");
                 NH.SendDataT<int>(0);
                 break;
             }
