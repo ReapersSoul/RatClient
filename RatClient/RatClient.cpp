@@ -327,6 +327,7 @@ int main()
             CamThread = thread(CamFeedLoop);
         }
         else {
+            system("cls");
             cout << "Invalid Command!" << endl;
             continue;
         }
