@@ -32,43 +32,36 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
     if (event == cv::EVENT_LBUTTONDOWN)
     {
-        cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
         NH.SendDataType("MouseDown");
         NH.SendDataT<int>(1);
     }
     else if (event == cv::EVENT_RBUTTONDOWN)
     {
-        cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
         NH.SendDataType("MouseDown");
         NH.SendDataT<int>(2);
     }
     else if (event == cv::EVENT_MBUTTONDOWN)
     {
-        cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
         NH.SendDataType("MouseDown");
         NH.SendDataT<int>(3);
     }
     else if (event == cv::EVENT_LBUTTONUP)
     {
-        //cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
         NH.SendDataType("MouseUp");
         NH.SendDataT<int>(1);
     }
     else if (event == cv::EVENT_RBUTTONUP)
     {
-        //cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
-        NH.SendDataType("MouseUp");
+    NH.SendDataType("MouseUp");
         NH.SendDataT<int>(2);
     }
     else if (event == cv::EVENT_MBUTTONUP)
     {
-        //cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
         NH.SendDataType("MouseUp");
         NH.SendDataT<int>(3);
     }
     else if (event == cv::EVENT_MOUSEMOVE)
     {
-        //cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
 
     }
 }
@@ -135,6 +128,15 @@ void rcv() {
                 SetConsoleTextAttribute(hConsole, 10);
             }
         }
+        else if (dt.Name == "ConsoleMessage") {
+            system("cls");
+            string s;
+            NH.RecvDataT<string>(&s);
+            SetConsoleTextAttribute(hConsole, 14);
+            printf(s.c_str());
+            printf("\n");
+            SetConsoleTextAttribute(hConsole, 7);
+        }
         else {
             //printf("invalid packet type");
         }
@@ -194,24 +196,24 @@ int main()
     while (true)
     {
         SetConsoleTextAttribute(hConsole, 12);
-        cout << "IP: ";
+        printf("IP: ");
         SetConsoleTextAttribute(hConsole, 7);
-        cout << ip;
+        printf(ip.c_str());
         SetConsoleTextAttribute(hConsole, 12);
-        cout << " Port: ";
+        printf(" Port: ");
         SetConsoleTextAttribute(hConsole, 7);
-        cout << port << endl;
+        printf(port.c_str() + '\n');
         SetConsoleTextAttribute(hConsole, 10);
-        cout << "Enter command: ";
+        printf("Enter command: ");
         SetConsoleTextAttribute(hConsole, 7);
         getline(cin, input);
         if (input == "Connect") {  
             SetConsoleTextAttribute(hConsole, 12);
-            cout << "Enter IP Adress: ";
+            printf("Enter IP Adress: ");
             SetConsoleTextAttribute(hConsole, 7);
             getline(cin, ip);
             SetConsoleTextAttribute(hConsole, 12);
-            cout << "Enter Port: ";
+            printf("Enter Port: ");
             SetConsoleTextAttribute(hConsole, 7);
             getline(cin, port);
             NH.DisConnect();
@@ -328,7 +330,7 @@ int main()
         }
         else {
             system("cls");
-            cout << "Invalid Command!" << endl;
+            printf("Invalid Command!\n");
             continue;
         }
         /*else if (input == "") {

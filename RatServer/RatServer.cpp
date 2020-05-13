@@ -367,12 +367,22 @@ void rcv() {
 int main()
 {
 
-    //thread recvThread;
+    thread recvThread;
 
+    std::stringstream buffer;
+
+    std::string send;
 
     if (NH.DefaultInitConnect()) {
-        rcv();
-        //recvThread = thread(rcv);
+        recvThread = thread(rcv);
+        while (true) {
+            send = buffer.str();
+            if (send != "") {
+                printf("%s", send);
+                NH.SendDataType("ConsoleMessage");
+                NH.SendDataT<string>(send);
+            }
+        }
         //system("pause");
     }
 
