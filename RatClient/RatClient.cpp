@@ -200,7 +200,8 @@ int main()
         SetConsoleTextAttribute(hConsole, 12);
         printf(" Port: ");
         SetConsoleTextAttribute(hConsole, 7);
-        printf(port.c_str() + '\n');
+        printf(port.c_str());
+        printf("\n");
         SetConsoleTextAttribute(hConsole, 10);
         printf("Enter command: ");
         SetConsoleTextAttribute(hConsole, 7);
