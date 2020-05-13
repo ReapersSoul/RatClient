@@ -106,16 +106,12 @@ void rcv() {
         }
         else if (dt.Name == "DesktopIMG")
         {
-            if (cv::getWindowProperty(DesktopFeed, 0) >= 0) {
                 NH.RecvCVMat(&Dimage);
                 cv::imshow(DesktopFeed, Dimage); // Show our image inside the created window                
-            }
         }
         else if (dt.Name == "CamIMG") {
-            if (cv::getWindowProperty(CamFeed, 0) >= 0) {
                 NH.RecvCVMat(&Cimage);
                 cv::imshow(CamFeed, Cimage); // Show our image inside the created window.
-            }
         }
         else if (dt.Name == "MBAwnser") {
             int awnser;
@@ -151,12 +147,19 @@ void DesktopFeedLoop() {
     cv::namedWindow(DesktopFeed, cv::WINDOW_NORMAL);
     cv::resizeWindow(DesktopFeed, 960, 540);
     cv::setMouseCallback(DesktopFeed, CallBackFunc, NULL);
-    while (cv::getWindowProperty(DesktopFeed, cv::WND_PROP_VISIBLE) > 0) {
-        printf("%f", cv::getWindowProperty(DesktopFeed, cv::WND_PROP_VISIBLE));
+    while (true) {
         NH.SendDataType("DesktopIMG");
-        cv::waitKey(1);
+        if (cv::waitKey(1) == 27) {
+            break;
+        }
+        else{
+            //send key press to server
+            //NH.SendDataType("KeyDown");
+        }
         Sleep(500);
     }
+    cv::destroyWindow(DesktopFeed);
+    Sleep(1500);
     cv::destroyWindow(DesktopFeed);
 }
 
@@ -167,9 +170,13 @@ void CamFeedLoop() {
     while (cv::getWindowProperty(CamFeed, cv::WND_PROP_VISIBLE)>0) {
         printf("%f", cv::getWindowProperty(CamFeed, cv::WND_PROP_VISIBLE));
         NH.SendDataType("CamIMG");
-        cv::waitKey(1);
+        if (cv::waitKey(1) == 27) {
+            break;
+        }
         Sleep(500);
     }
+    cv::destroyWindow(CamFeed);
+    Sleep(1500);
     cv::destroyWindow(CamFeed);
 }
 
