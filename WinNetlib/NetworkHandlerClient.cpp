@@ -3,6 +3,7 @@
 
 bool NetworkHandlerClient::Init(PCSTR ip,PCSTR Port)
 {
+
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
@@ -21,6 +22,8 @@ bool NetworkHandlerClient::Init(PCSTR ip,PCSTR Port)
         WSACleanup();
         return false;
     }
+    this->ip = ip;
+    this->port = Port;
     return true;
 }
 
@@ -85,6 +88,8 @@ bool NetworkHandlerClient::DefaultInitConnect()
 {
     if (Init("127.0.0.1", "27015")) {
         if (Connect()) {
+            this->ip = "127.0.0.1";
+            this->port = "27015";
             return true;
         }
     }

@@ -315,8 +315,12 @@ int main()
 
 
     if (NH.DefaultInitConnect()) {
-        recvThread = thread(rcv, NH);
+        //recvThread = thread(rcv, NH);
+        while (true)
+        {
 
+            cout << NH.RecvDataT<string>() << endl;
+        }
         system("pause");
     }
 

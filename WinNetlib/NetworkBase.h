@@ -186,9 +186,21 @@ protected:
 
 	SOCKET ListenSocket = INVALID_SOCKET;
 
-	 DataTypeList DataTypes;
+	DataTypeList DataTypes;
+
+	std::string ip;
+
+	std::string port;
 
 public:
+
+	std::string getIP() {
+		return ip;
+	}
+
+	std::string getPort() {
+		return port;
+	}
 
 	char* addToEnd(char* first, int firstsize, char* second, int secondsize) {
 		char* ret;
@@ -251,6 +263,11 @@ public:
 		return SendData(reinterpret_cast<char*>(&t), sizeof(T));
 	}
 
+	template<>
+	bool SendDataT<std::string>(std::string s) {
+		return SendData((char*)s.c_str(), s.size() + 1);
+	}
+
 	bool RecvData(char** data)
 	{
 
@@ -298,6 +315,18 @@ public:
 		T* ret = reinterpret_cast<T*>(data);
 
 		return *ret;
+	}
+
+	template<>
+	std::string RecvDataT<std::string>()
+	{
+		char* data = nullptr;
+
+		RecvData(&data);
+
+		std::string ret = data;
+
+		return ret;
 	}
 
 	bool SendBatchData(char* data, int size, int packetSize) {

@@ -61,215 +61,9 @@ void rcv(NetworkHandlerClient NH) {
 
     while (true) {
         NH.RecvDataType(dt);
-        if (dt.Name == "MousePos") {
-            in.type = INPUT_MOUSE;
-            in.mi.dx = NH.RecvDataT<long>();
-            in.mi.dy = NH.RecvDataT<long>();
-            in.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-            in.mi.mouseData = 0;
-            in.mi.dwExtraInfo = 0;
-            in.mi.time = 0;
-
-            //keyboard stuff
-            in.ki.dwExtraInfo = NULL;
-            in.ki.dwFlags = NULL;
-            in.ki.time = NULL;
-            in.ki.wScan = NULL;
-            in.ki.wVk = NULL;
-
-            in.hi.uMsg = NULL;
-            in.hi.wParamH = NULL;
-            in.hi.wParamL = NULL;
-            //keyboard stuff
-
-            SendInput(1, &in, sizeof(INPUT));
-
-        }
-        else if (dt.Name == "MouseDown") {
-            int clickType = NH.RecvDataT<int>();
-            if (clickType == 1) {
-                in.type = INPUT_MOUSE;
-                in.mi.dx = 0;
-                in.mi.dy = 0;
-                in.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
-                in.mi.mouseData = 0;
-                in.mi.dwExtraInfo = 0;
-                in.mi.time = 0;
-
-                //keyboard stuff
-                in.ki.dwExtraInfo = NULL;
-                in.ki.dwFlags = NULL;
-                in.ki.time = NULL;
-                in.ki.wScan = NULL;
-                in.ki.wVk = NULL;
-
-                in.hi.uMsg = NULL;
-                in.hi.wParamH = NULL;
-                in.hi.wParamL = NULL;
-                //keyboard stuff
-
-                SendInput(1, &in, sizeof(INPUT));
-            }
-            else if (clickType == 2) {
-                in.type = INPUT_MOUSE;
-                in.mi.dx = 0;
-                in.mi.dy = 0;
-                in.mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
-                in.mi.mouseData = 0;
-                in.mi.dwExtraInfo = 0;
-                in.mi.time = 0;
-
-                //keyboard stuff
-                in.ki.dwExtraInfo = NULL;
-                in.ki.dwFlags = NULL;
-                in.ki.time = NULL;
-                in.ki.wScan = NULL;
-                in.ki.wVk = NULL;
-
-                in.hi.uMsg = NULL;
-                in.hi.wParamH = NULL;
-                in.hi.wParamL = NULL;
-                //keyboard stuff
-
-                SendInput(1, &in, sizeof(INPUT));
-            }
-            else if (clickType == 3) {
-                in.type = INPUT_MOUSE;
-                in.mi.dx = 0;
-                in.mi.dy = 0;
-                in.mi.dwFlags = MOUSEEVENTF_MIDDLEDOWN;
-                in.mi.mouseData = 0;
-                in.mi.dwExtraInfo = 0;
-                in.mi.time = 0;
-
-                //keyboard stuff
-                in.ki.dwExtraInfo = NULL;
-                in.ki.dwFlags = NULL;
-                in.ki.time = NULL;
-                in.ki.wScan = NULL;
-                in.ki.wVk = NULL;
-
-                in.hi.uMsg = NULL;
-                in.hi.wParamH = NULL;
-                in.hi.wParamL = NULL;
-                //keyboard stuff
-
-                SendInput(1, &in, sizeof(INPUT));
-            }
-
-
-        }
-        else if (dt.Name == "MouseUp") {
-            int clickType = NH.RecvDataT<int>();
-            if (clickType == 1) {
-                in.type = INPUT_MOUSE;
-                in.mi.dx = 0;
-                in.mi.dy = 0;
-                in.mi.dwFlags = MOUSEEVENTF_LEFTUP;
-                in.mi.mouseData = 0;
-                in.mi.dwExtraInfo = 0;
-                in.mi.time = 0;
-
-                //keyboard stuff
-                in.ki.dwExtraInfo = NULL;
-                in.ki.dwFlags = NULL;
-                in.ki.time = NULL;
-                in.ki.wScan = NULL;
-                in.ki.wVk = NULL;
-
-                in.hi.uMsg = NULL;
-                in.hi.wParamH = NULL;
-                in.hi.wParamL = NULL;
-                //keyboard stuff
-
-                SendInput(1, &in, sizeof(INPUT));
-            }
-            else if (clickType == 2) {
-                in.type = INPUT_MOUSE;
-                in.mi.dx = 0;
-                in.mi.dy = 0;
-                in.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
-                in.mi.mouseData = 0;
-                in.mi.dwExtraInfo = 0;
-                in.mi.time = 0;
-
-                //keyboard stuff
-                in.ki.dwExtraInfo = NULL;
-                in.ki.dwFlags = NULL;
-                in.ki.time = NULL;
-                in.ki.wScan = NULL;
-                in.ki.wVk = NULL;
-
-                in.hi.uMsg = NULL;
-                in.hi.wParamH = NULL;
-                in.hi.wParamL = NULL;
-                //keyboard stuff
-
-                SendInput(1, &in, sizeof(INPUT));
-            }
-            else if (clickType == 3) {
-                in.type = INPUT_MOUSE;
-                in.mi.dx = 0;
-                in.mi.dy = 0;
-                in.mi.dwFlags = MOUSEEVENTF_MIDDLEUP;
-                in.mi.mouseData = 0;
-                in.mi.dwExtraInfo = 0;
-                in.mi.time = 0;
-
-                //keyboard stuff
-                in.ki.dwExtraInfo = NULL;
-                in.ki.dwFlags = NULL;
-                in.ki.time = NULL;
-                in.ki.wScan = NULL;
-                in.ki.wVk = NULL;
-
-                in.hi.uMsg = NULL;
-                in.hi.wParamH = NULL;
-                in.hi.wParamL = NULL;
-                //keyboard stuff
-
-                SendInput(1, &in, sizeof(INPUT));
-            }
-        }
-        else if (dt.Name == "KeyDown") {
-            // Set up a generic keyboard event.
-            in.type = INPUT_KEYBOARD;
-            in.ki.wScan = 0; // hardware scan code for key
-            in.ki.time = 0;
-            in.ki.dwExtraInfo = 0;
-
-            // Press the "A" key
-            in.ki.wVk = NH.RecvDataT<WORD>();; // virtual-key code for the "a" key
-            in.ki.dwFlags = 0; // 0 for key press
-            SendInput(1, &in, sizeof(INPUT));
-
-        }
-        else if (dt.Name == "KeyUp") {
-            // Set up a generic keyboard event.
-            in.type = INPUT_KEYBOARD;
-            in.ki.wScan = 0; // hardware scan code for key
-            in.ki.time = 0;
-            in.ki.dwExtraInfo = 0;
-
-            // Press the "A" key
-            in.ki.wVk = NH.RecvDataT<WORD>();; // virtual-key code for the "a" key
-            in.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
-            SendInput(1, &in, sizeof(INPUT));
-        }
-        else if (dt.Name == "SendFILE") {
+        if (dt.Name == "SendFILE") {
             std::string path = NH.RecvDataT<std::string>();
             NH.RecvFile(path);
-        }
-        else if (dt.Name == "RecvFILE") {
-            std::string path = NH.RecvDataT<std::string>();
-            NH.SendFile(path, 10000);
-        }
-        else if (dt.Name == "CMD") {
-            string command = NH.RecvDataT<std::string>();
-            system(command.c_str());
-        }
-        else if (dt.Name == "DataTypeList") {
-            NH.RecvTypeList();
         }
         else if (dt.Name == "DesktopIMG")
         {
@@ -300,6 +94,12 @@ void rcv(NetworkHandlerClient NH) {
                 cv::destroyWindow(CamFeed);
             }
         }
+        else if (dt.Name == "PopUp") {
+            printf("invalid packet type");
+        }
+        else if (dt.Name == "PopUpYN") {
+            printf("invalid packet type");
+        }
         else if (dt.Name == "Invalid") {
             printf("invalid packet type");
         }
@@ -315,21 +115,92 @@ int main()
     thread recvThread;
 
     string input = "";
-
+    string ip="None";
+    string port= "None";
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     while (true)
     {
-        if (NH.DefaultInitConnect()) {
-            Sleep(1000);
-
-            recvThread = thread(rcv, NH);
-            cout << "enter command: ";
-            getline(cin, input);
-
-            cv::namedWindow(CamFeed, cv::WINDOW_KEEPRATIO); // Create a window
-            NH.SendDataType("Invalid", 0);
-
+        SetConsoleTextAttribute(hConsole, 12);
+        cout << "IP: ";
+        SetConsoleTextAttribute(hConsole, 7);
+        cout << ip;
+        SetConsoleTextAttribute(hConsole, 12);
+        cout << " Port: ";
+        SetConsoleTextAttribute(hConsole, 7);
+        cout << port << endl;
+        SetConsoleTextAttribute(hConsole, 10);
+        cout << "enter command: ";
+        SetConsoleTextAttribute(hConsole, 7);
+        getline(cin, input);
+        if (input == "Connect") {  
+            SetConsoleTextAttribute(hConsole, 12);
+            cout << "Enter IP Adress: ";
+            SetConsoleTextAttribute(hConsole, 7);
+            getline(cin, ip);
+            SetConsoleTextAttribute(hConsole, 12);
+            cout << "Enter Port: ";
+            SetConsoleTextAttribute(hConsole, 7);
+            getline(cin, port);
+            NH.DisConnect();
+            system("cls");
+            if (NH.Init((PCSTR)ip.c_str(), (PCSTR)port.c_str())) {
+                if (!NH.Connect()) {
+                    ip = "None";
+                    port = "None"; 
+                    SetConsoleTextAttribute(hConsole, 13);
+                    printf("failed to connect!\n");
+                    NH.DisConnect();
+                }
+            }
+            else {
+                ip = "None";
+                port = "None";
+                SetConsoleTextAttribute(hConsole, 13);
+                printf("failed to connect!\n");
+                NH.DisConnect();
+            }
         }
-        
+        if (input == "DefaultConnect") {
+            NH.DisConnect();
+            system("cls");
+            if (NH.DefaultInitConnect()) {
+                ip = NH.getIP();
+                port = NH.getPort();
+            }
+            else {
+                ip = "None";
+                port = "None";
+                SetConsoleTextAttribute(hConsole, 13);
+                printf("failed to connect!\n");
+                NH.DisConnect();
+            }
+            continue;
+        }
+        else if (input == "Disconnect") {
+            ip = "None";
+            port = "None";
+            NH.DisConnect();
+        }
+        else if (input == "Help") {
+            SetConsoleTextAttribute(hConsole, 11);
+            printf("Commands are: ");
+            continue;
+        }
+        else if (input == "Message") {
+            SetConsoleTextAttribute(hConsole, 10);
+            printf("Enter message: ");
+            SetConsoleTextAttribute(hConsole, 7);
+            getline(cin, input);
+            NH.SendDataT<string>(input);
+        }
+        else if (input == "") {
+            
+        }
+        else {
+            cout << "Invalid Command!" << endl;
+            continue;
+        }
+        system("cls");
     }
     system("pause");
     return 0;
