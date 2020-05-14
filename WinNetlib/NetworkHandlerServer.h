@@ -14,7 +14,10 @@
 
 class NetworkHandlerServer: public NetworkBase
 {
+	bool connected=false;
 public:
+	bool IsConnected();
+
 	bool Init(PCSTR Port);
 
 	bool Listen();

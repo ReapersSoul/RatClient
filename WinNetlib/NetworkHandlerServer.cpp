@@ -1,5 +1,10 @@
 #include "NetworkHandlerServer.h"
 
+bool NetworkHandlerServer::IsConnected()
+{
+	return connected;
+}
+
 bool NetworkHandlerServer::Init(PCSTR Port)
 {
 	// Initialize Winsock
@@ -65,9 +70,10 @@ bool NetworkHandlerServer::AcceptConn()
 		printf("accept failed: %d\n", WSAGetLastError());
 		closesocket(ListenSocket);
 		WSACleanup();
+		connected = false;
 		return false;
 	}
-
+	connected = true;
 	return true;
 }
 

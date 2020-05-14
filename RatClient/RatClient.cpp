@@ -88,6 +88,7 @@ void rcv() {
     NH.AddDataType("RecvPopUpYN", 15);
     NH.AddDataType("ConsoleMessage", 16);
     NH.AddDataType("MBAwnser", 17);
+    NH.AddDataType("Disconnect", 18);
     //NH.AddDataType("", 3);
 
     while (true) {
@@ -260,6 +261,7 @@ int main()
         else if (input == "Disconnect") {
             ip = "None";
             port = "None";
+            NH.SendDataType("Disconnect");
             NH.DisConnect();
         }
         else if (input == "Help") {

