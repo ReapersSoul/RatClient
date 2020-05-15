@@ -1,11 +1,21 @@
-#include "NetworkHandlerServer.h"
+#include "Single_NetworkHandlerServer.h"
 
-bool NetworkHandlerServer::IsConnected()
+std::string Single_NetworkHandlerServer::GetConnectedName()
+{
+	return ConnectedSocket.name;
+}
+
+bool Single_NetworkHandlerServer::GetConnected()
+{
+	return ConnectedSocket.connected;
+}
+
+bool Single_NetworkHandlerServer::IsConnected()
 {
 	return connected;
 }
 
-bool NetworkHandlerServer::Init(PCSTR Port)
+bool Single_NetworkHandlerServer::Init(PCSTR Port)
 {
 	// Initialize Winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -48,7 +58,7 @@ bool NetworkHandlerServer::Init(PCSTR Port)
 	return true;
 }
 
-bool NetworkHandlerServer::Listen()
+bool Single_NetworkHandlerServer::Listen()
 {
 	if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
 		printf("Listen failed with error: %ld\n", WSAGetLastError());
@@ -60,42 +70,48 @@ bool NetworkHandlerServer::Listen()
 	return true;
 }
 
-bool NetworkHandlerServer::AcceptConn()
+bool Single_NetworkHandlerServer::AcceptConn()
 {
-	ConnectedSocket = INVALID_SOCKET;
+	ConnectedSocket.sock = INVALID_SOCKET;
 
 	// Accept a client socket
-	ConnectedSocket = accept(ListenSocket, NULL, NULL);
-	if (ConnectedSocket == INVALID_SOCKET) {
+	ConnectedSocket.sock = accept(ListenSocket, NULL, NULL);
+	if (ConnectedSocket.sock == INVALID_SOCKET) {
 		printf("accept failed: %d\n", WSAGetLastError());
 		closesocket(ListenSocket);
-		WSACleanup();
 		connected = false;
 		return false;
 	}
-	connected = true;
+
+	RecvDataT<std::string>(&ConnectedSocket.name);
+
+	SendDataT<std::string>(Name);
+
+	ConnectedSocket.connected = true;
+
 	return true;
 }
 
-bool NetworkHandlerServer::DisConnect()
+bool Single_NetworkHandlerServer::DisConnect()
 {
 	// shutdown the send half of the connection since no more data will be sent
-	iResult = shutdown(ConnectedSocket, SD_SEND);
+	iResult = shutdown(ConnectedSocket.sock, SD_SEND);
 	if (iResult == SOCKET_ERROR) {
 		printf("shutdown failed: %d\n", WSAGetLastError());
-		closesocket(ConnectedSocket);
+		closesocket(ConnectedSocket.sock);
 		WSACleanup();
 		return false;
 	}
 
 	// cleanup
-	closesocket(ConnectedSocket);
+	closesocket(ConnectedSocket.sock);
 	WSACleanup();
+	ConnectedSocket.connected = false;
 
 	return true;
 }
 
-bool NetworkHandlerServer::DefaultInitConnect()
+bool Single_NetworkHandlerServer::DefaultInitConnect()
 {
 	if (Init("27015")) {
 		if (Listen()) {

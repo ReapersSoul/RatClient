@@ -1,7 +1,17 @@
-#include "NetworkHandlerClient.h"
+#include "Multi_NetworkHandlerClient.h"
 
 
-bool NetworkHandlerClient::Init(PCSTR ip,PCSTR Port)
+bool Multi_NetworkHandlerClient::Connect(PCSTR ip, PCSTR Port)
+{
+    if (Init(ip, Port)) {
+        if (Connect()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Multi_NetworkHandlerClient::Init(PCSTR ip,PCSTR Port)
 {
 
     // Initialize Winsock
@@ -19,7 +29,6 @@ bool NetworkHandlerClient::Init(PCSTR ip,PCSTR Port)
     iResult = getaddrinfo(ip, Port, &hints, &result);
     if (iResult != 0) {
         printf("getaddrinfo failed: %d\n", iResult);
-        WSACleanup();
         return false;
     }
     this->ip = ip;
@@ -27,14 +36,14 @@ bool NetworkHandlerClient::Init(PCSTR ip,PCSTR Port)
     return true;
 }
 
-bool NetworkHandlerClient::Connect()
+bool Multi_NetworkHandlerClient::Connect()
 {
     // Attempt to connect to the first address returned by
 // the call to getaddrinfo
     ptr = result;
 
     // Create a SOCKET for connecting to server
-    ConnectedSocket = socket(ptr->ai_family, ptr->ai_socktype,
+    SOCKET ConnectedSocket = socket(ptr->ai_family, ptr->ai_socktype,
         ptr->ai_protocol);
 
     if (ConnectedSocket == INVALID_SOCKET) {
@@ -63,28 +72,37 @@ bool NetworkHandlerClient::Connect()
         WSACleanup();
         return false;
     }
+    ConnectedSockets.push_back(NamedSOCKET(ConnectedSocket, ""));
+    
+
+    SendDataT<std::string>(Name, &ConnectedSockets[ConnectedSockets.size()-1]);
+
+    RecvDataT<std::string>(&ConnectedSockets[ConnectedSockets.size() - 1].name, &ConnectedSockets[ConnectedSockets.size()-1]);
+
+    ServerThreads.push_back(std::thread(*RecvFunct, &ConnectedSockets[ConnectedSockets.size() - 1]));
+
     return true;
 }
 
-bool NetworkHandlerClient::DisConnect()
+bool Multi_NetworkHandlerClient::DisConnect(NamedSOCKET * ns)
 {
     // shutdown the send half of the connection since no more data will be sent
-    iResult = shutdown(ConnectedSocket, SD_SEND);
+    iResult = shutdown(ns->sock, SD_SEND);
     if (iResult == SOCKET_ERROR) {
         printf("shutdown failed: %d\n", WSAGetLastError());
-        closesocket(ConnectedSocket);
-        WSACleanup();
+        closesocket(ns->sock);
         return false;
     }
     
     // cleanup
-    closesocket(ConnectedSocket);
-    WSACleanup();
+    closesocket(ns->sock);
+    ns->connected = false;
+    ServerThreads[FindSocketIndex(*ns)].join();
 
     return true;
 }
 
-bool NetworkHandlerClient::DefaultInitConnect()
+bool Multi_NetworkHandlerClient::DefaultInitConnect()
 {
     if (Init("127.0.0.1", "27015")) {
         if (Connect()) {

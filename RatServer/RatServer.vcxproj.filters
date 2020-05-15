@@ -18,24 +18,15 @@
     <ClCompile Include="RatServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\WinNetlib\NetworkBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\WinNetlib\NetworkHandlerClient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\WinNetlib\NetworkHandlerServer.cpp">
+    <ClCompile Include="..\WinNetlib\Multi\Multi_NetworkHandlerServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\WinNetlib\NetworkBase.h">
+    <ClInclude Include="..\WinNetlib\Multi\Multi_NetworkBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\WinNetlib\NetworkHandlerClient.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\WinNetlib\NetworkHandlerServer.h">
+    <ClInclude Include="..\WinNetlib\Multi\Multi_NetworkHandlerServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

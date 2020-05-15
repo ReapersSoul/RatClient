@@ -11,7 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include <opencv2/opencv.hpp>
+//#include <opencv2/opencv.hpp>
 #include <map>
 
 struct DataType
@@ -52,7 +52,7 @@ private:
 public:
 
 	DataTypeList() {
-		AddType("Invalid",0);
+		AddType("Invalid", 0);
 		AddType("DataTypeList", 1);
 	}
 
@@ -146,7 +146,7 @@ public:
 	//returns true if type has been removed and false if the type didnt exists
 	bool RemoveType(std::string name, int identity) {
 		if (!TypeExists(DataType(name, identity))) {
-			Types.erase(Types.begin()+FindTypeIndex(DataType(name, identity)));
+			Types.erase(Types.begin() + FindTypeIndex(DataType(name, identity)));
 			return true;
 		}
 		else {
@@ -176,9 +176,29 @@ public:
 	inline const_iterator cend() const noexcept { return Types.cend(); }
 };
 
-class NetworkBase
+struct NamedSOCKET {
+
+	NamedSOCKET() {
+		sock = INVALID_SOCKET;
+		name = "";
+		connected = false;
+	}
+
+	NamedSOCKET(SOCKET s, std::string Name) {
+		sock = s;
+		name = Name;
+	}
+	bool connected;
+	SOCKET sock;
+	std::string name;
+};
+
+class Single_NetworkBase
 {
 protected:
+
+	std::string Name;
+
 	WSADATA wsaData;
 	int iResult;
 
@@ -192,7 +212,14 @@ protected:
 
 	std::string port;
 
+
+	NamedSOCKET ConnectedSocket;
+
 public:
+
+	void SetName(std::string s) {
+		Name = s;
+	}
 
 	std::string getIP() {
 		return ip;
@@ -234,22 +261,18 @@ public:
 		return ret;
 	}
 
-	SOCKET ConnectedSocket;
-
-	std::vector<std::string> packetTypes;
-
 
 	bool SendData(char* data, int size)
 	{
 		//send size
-		iResult = send(ConnectedSocket, reinterpret_cast<char*>(&size), sizeof(int), 0);
+		iResult = send(ConnectedSocket.sock, reinterpret_cast<char*>(&size), sizeof(int), 0);
 		if (iResult == SOCKET_ERROR) {
 			//printf("send failed: %d\n", WSAGetLastError());
 			return false;
 		}
 
 		//send data
-		iResult = send(ConnectedSocket, data, size, 0);
+		iResult = send(ConnectedSocket.sock, data, size, 0);
 		if (iResult == SOCKET_ERROR) {
 			//printf("send failed: %d\n", WSAGetLastError());
 			return false;
@@ -280,13 +303,16 @@ public:
 
 		int size = 0;
 
-		iResult = recv(ConnectedSocket, reinterpret_cast<char*>(&size), sizeof(int), 0);
+		iResult = recv(ConnectedSocket.sock, reinterpret_cast<char*>(&size), sizeof(int), 0);
 		if (iResult > 0) {
 			//printf("Bytes received: %d\n", iResult);
 			//std::cout << "size of packet: " << size << std::endl;
 		}
-		else if (iResult == 0)
+		else if (iResult == 0) {
 			printf("Connection closed\n");
+			ConnectedSocket.connected = false;
+			return false;
+		}
 		else {
 			//printf("recv failed: %d\n", WSAGetLastError());
 			return false;
@@ -294,12 +320,15 @@ public:
 
 		char* ret = new char[size];
 
-		iResult = recv(ConnectedSocket, ret, size, 0);
+		iResult = recv(ConnectedSocket.sock, ret, size, 0);
 		if (iResult > 0) {
 			//printf("Bytes received: %d\n", iResult);
 		}
-		else if (iResult == 0)
+		else if (iResult == 0) {
 			printf("Connection closed\n");
+			ConnectedSocket.connected = false;
+			return false;
+		}
 		else {
 			//printf("recv failed: %d\n", WSAGetLastError());
 			return false;
@@ -602,48 +631,48 @@ public:
 		DataTypes.RemoveType(dt);
 	}
 
-	bool SendCVMat(cv::Mat img) {
-		if (SendDataT<int>(img.rows)) {
-			if (SendDataT<int>(img.cols)) {
+	//bool SendCVMat(cv::Mat img) {
+	//	if (SendDataT<int>(img.rows)) {
+	//		if (SendDataT<int>(img.cols)) {
 
-				char* k = (char*)img.data;
+	//			char* k = (char*)img.data;
 
-					if (SendData(k, img.total() * img.elemSize())) {
+	//				if (SendData(k, img.total() * img.elemSize())) {
 
-						if (SendDataT<int>(img.type())) {
+	//					if (SendDataT<int>(img.type())) {
 
-							return true;
-						}
-					}
-			}
-		}
-		return false;
-	}
+	//						return true;
+	//					}
+	//				}
+	//		}
+	//	}
+	//	return false;
+	//}
 
-	bool RecvCVMat(cv::Mat* img) {
-		int rows;
-		if (!RecvDataT<int>(&rows)) {
-			return false;
-		}
-		int cols;
-		if (!RecvDataT<int>(&cols)) {
-			return false;
-		}
-		char* data = nullptr;
+	//bool RecvCVMat(cv::Mat* img) {
+	//	int rows;
+	//	if (!RecvDataT<int>(&rows)) {
+	//		return false;
+	//	}
+	//	int cols;
+	//	if (!RecvDataT<int>(&cols)) {
+	//		return false;
+	//	}
+	//	char* data = nullptr;
 
-		if (!RecvData(&data)) {
-			return false;
-		}
+	//	if (!RecvData(&data)) {
+	//		return false;
+	//	}
 
-		int imgtype;
-		if (!RecvDataT<int>(&imgtype)) {
-			return false;
-		}
+	//	int imgtype;
+	//	if (!RecvDataT<int>(&imgtype)) {
+	//		return false;
+	//	}
 
-		*img = cv::Mat(rows, cols, imgtype, data);
+	//	*img = cv::Mat(rows, cols, imgtype, data);
 
-		return true;
-	}
+	//	return true;
+	//}
 
 };
 

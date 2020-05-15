@@ -2,7 +2,7 @@
 //
 
 #include <iostream>
-#include "../WinNetlib/NetworkHandlerClient.h"
+#include "../WinNetlib/Multi/Multi_NetworkHandlerClient.h"
 
 #include <string>
 #include <thread>
@@ -24,41 +24,43 @@ std::wstring s2ws(const std::string& s)
 }
 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-NetworkHandlerClient NH;
+Multi_NetworkHandlerClient NH;
 string DesktopFeed = "Desktop Feed";
 string CamFeed = "Cam Feed";
+
+NamedSOCKET * SelectedServer;
 
 void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
     if (event == cv::EVENT_LBUTTONDOWN)
     {
-        NH.SendDataType("MouseDown");
-        NH.SendDataT<int>(1);
+        NH.SendDataType("MouseDown",SelectedServer);
+        NH.SendDataT<int>(1, SelectedServer);
     }
     else if (event == cv::EVENT_RBUTTONDOWN)
     {
-        NH.SendDataType("MouseDown");
-        NH.SendDataT<int>(2);
+        NH.SendDataType("MouseDown", SelectedServer);
+        NH.SendDataT<int>(2, SelectedServer);
     }
     else if (event == cv::EVENT_MBUTTONDOWN)
     {
-        NH.SendDataType("MouseDown");
-        NH.SendDataT<int>(3);
+        NH.SendDataType("MouseDown", SelectedServer);
+        NH.SendDataT<int>(3, SelectedServer);
     }
     else if (event == cv::EVENT_LBUTTONUP)
     {
-        NH.SendDataType("MouseUp");
-        NH.SendDataT<int>(1);
+        NH.SendDataType("MouseUp", SelectedServer);
+        NH.SendDataT<int>(1, SelectedServer);
     }
     else if (event == cv::EVENT_RBUTTONUP)
     {
-    NH.SendDataType("MouseUp");
-        NH.SendDataT<int>(2);
+    NH.SendDataType("MouseUp", SelectedServer);
+        NH.SendDataT<int>(2, SelectedServer);
     }
     else if (event == cv::EVENT_MBUTTONUP)
     {
-        NH.SendDataType("MouseUp");
-        NH.SendDataT<int>(3);
+        NH.SendDataType("MouseUp", SelectedServer);
+        NH.SendDataT<int>(3, SelectedServer);
     }
     else if (event == cv::EVENT_MOUSEMOVE)
     {
@@ -66,7 +68,7 @@ void CallBackFunc(int event, int x, int y, int flags, void* userdata)
     }
 }
 
-void rcv() {
+void rcv(NamedSOCKET * ns) {
     DataType dt;
     cv::Mat Dimage;
     cv::Mat Cimage;
@@ -91,26 +93,26 @@ void rcv() {
     NH.AddDataType("Disconnect", 18);
     //NH.AddDataType("", 3);
 
-    while (true) {
-        NH.RecvDataType(&dt);
+    while (ns->connected) {
+        NH.RecvDataType(&dt, ns);
         if (dt.Name == "SendFILE") {
             std::string path;
-            NH.RecvDataT<std::string>(&path);
-            NH.RecvFile(path);
+            NH.RecvDataT<std::string>(&path, ns);
+            NH.RecvFile(path, ns);
         }
         else if (dt.Name == "DesktopIMG")
         {
-                NH.RecvCVMat(&Dimage);
+                NH.RecvCVMat(&Dimage, ns);
                 cv::imshow(DesktopFeed, Dimage); // Show our image inside the created window                
         }
         else if (dt.Name == "CamIMG") {
-                NH.RecvCVMat(&Cimage);
+                NH.RecvCVMat(&Cimage, ns);
                 cv::imshow(CamFeed, Cimage); // Show our image inside the created window.
         }
         else if (dt.Name == "MBAwnser") {
             int awnser;
 
-            NH.RecvDataT<int>(&awnser);
+            NH.RecvDataT<int>(&awnser, ns);
 
             if (awnser == 1) {
                 printf("\r%c[2K", 27);
@@ -130,7 +132,7 @@ void rcv() {
         else if (dt.Name == "ConsoleMessage") {
             system("cls");
             string s;
-            NH.RecvDataT<string>(&s);
+            NH.RecvDataT<string>(&s, ns);
             SetConsoleTextAttribute(hConsole, 14);
             printf(s.c_str());
             printf("\n");
@@ -144,12 +146,12 @@ void rcv() {
 }
 
 
-void DesktopFeedLoop() {
+void DesktopFeedLoop(NamedSOCKET*ns) {
     cv::namedWindow(DesktopFeed, cv::WINDOW_NORMAL);
     cv::resizeWindow(DesktopFeed, 960, 540);
     cv::setMouseCallback(DesktopFeed, CallBackFunc, NULL);
     while (true) {
-        NH.SendDataType("DesktopIMG");
+        NH.SendDataType("DesktopIMG", ns);
         if (cv::waitKey(1) == 27) {
             break;
         }
@@ -164,13 +166,13 @@ void DesktopFeedLoop() {
     cv::destroyWindow(DesktopFeed);
 }
 
-void CamFeedLoop() {
+void CamFeedLoop(NamedSOCKET * ns) {
     cv::namedWindow(CamFeed, cv::WINDOW_NORMAL);
     cv::resizeWindow(CamFeed, 500, 500);
 
     while (cv::getWindowProperty(CamFeed, cv::WND_PROP_VISIBLE)>0) {
         printf("%f", cv::getWindowProperty(CamFeed, cv::WND_PROP_VISIBLE));
-        NH.SendDataType("CamIMG");
+        NH.SendDataType("CamIMG", ns);
         if (cv::waitKey(1) == 27) {
             break;
         }

@@ -10,12 +10,17 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include "NetworkBase.h"
+#include "Single_NetworkBase.h"
 
-class NetworkHandlerServer: public NetworkBase
+class Single_NetworkHandlerServer: public Single_NetworkBase
 {
 	bool connected=false;
 public:
+
+	std::string GetConnectedName();
+
+	bool GetConnected();
+
 	bool IsConnected();
 
 	bool Init(PCSTR Port);

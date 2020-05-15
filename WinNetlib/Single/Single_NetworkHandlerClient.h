@@ -10,10 +10,12 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include "NetworkBase.h"
+#include "Single_NetworkBase.h"
 
-class NetworkHandlerClient: public NetworkBase 
+class Single_NetworkHandlerClient: public Single_NetworkBase
 {
+	
+
 public:
 	bool Init(PCSTR ip, PCSTR Port);
 

@@ -2,7 +2,7 @@
 //
 
 #include <iostream>
-#include "../WinNetlib/NetworkHandlerServer.h"
+#include "../WinNetlib/Multi/Multi_NetworkHandlerServer.h"
 #include <thread>
 
 #include <opencv2/opencv.hpp>
@@ -21,7 +21,7 @@ std::wstring s2ws(const std::string& s)
     return r;
 }
 
-NetworkHandlerServer NH;
+Multi_NetworkHandlerServer NH;
 string DesktopFeed = "Desktop Feed";
 string CamFeed = "Cam Feed";
 
