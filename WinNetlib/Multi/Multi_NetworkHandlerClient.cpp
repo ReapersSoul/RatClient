@@ -5,6 +5,8 @@ bool Multi_NetworkHandlerClient::Connect(PCSTR ip, PCSTR Port)
 {
     if (Init(ip, Port)) {
         if (Connect()) {
+            ConnectedSockets[ConnectedSockets.size() - 1].IP = ip;
+            ConnectedSockets[ConnectedSockets.size() - 1].PORT = Port;
             return true;
         }
     }
@@ -31,8 +33,6 @@ bool Multi_NetworkHandlerClient::Init(PCSTR ip,PCSTR Port)
         printf("getaddrinfo failed: %d\n", iResult);
         return false;
     }
-    this->ip = ip;
-    this->port = Port;
     return true;
 }
 
@@ -106,8 +106,8 @@ bool Multi_NetworkHandlerClient::DefaultInitConnect()
 {
     if (Init("127.0.0.1", "27015")) {
         if (Connect()) {
-            this->ip = "127.0.0.1";
-            this->port = "27015";
+            ConnectedSockets[ConnectedSockets.size() - 1].IP = "127.0.0.1";
+            ConnectedSockets[ConnectedSockets.size() - 1].PORT = "27015";
             return true;
         }
     }

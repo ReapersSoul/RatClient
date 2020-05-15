@@ -11,7 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-//#include <opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include <map>
 
 struct DataType
@@ -199,6 +199,9 @@ struct NamedSOCKET {
 
 	bool connected;
 
+	std::string IP;
+	std::string PORT;
+
 	SOCKET sock;
 	std::string name;
 };
@@ -219,23 +222,11 @@ protected:
 
 	DataTypeList DataTypes;
 
-	std::string ip;
-
-	std::string port;
-
 public:
 	std::vector<NamedSOCKET> ConnectedSockets;
 
 	void SetName(std::string s) {
 		Name = s;
-	}
-
-	std::string getIP() {
-		return ip;
-	}
-
-	std::string getPort() {
-		return port;
 	}
 
 	char* addToEnd(char* first, int firstsize, char* second, int secondsize) {

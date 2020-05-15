@@ -39,7 +39,6 @@ bool Multi_NetworkHandlerServer::Init(PCSTR Port)
 		return false;
 	}
 	freeaddrinfo(result);
-	this->port = Port;
 	return true;
 }
 
@@ -98,7 +97,6 @@ bool Multi_NetworkHandlerServer::DefaultInitConnect()
 	if (Init("27015")) {
 		if (Listen()) {
 			if (AcceptConn()) {
-				this->port = "27015";
 				return true;
 			}
 		}

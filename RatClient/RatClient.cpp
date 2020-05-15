@@ -189,27 +189,29 @@ int main()
     thread DesktopThread;
     thread CamThread;
     string input = "";
-    string ip="None";
-    string port= "None";
+    string Selected_ip="None";
+    string Selected_port= "None";
 
-    recvThread = thread(rcv);
+    NH.RecvFunct = &rcv;
 
     while (true)
     {
         SetConsoleTextAttribute(hConsole, 12);
-        printf("IP: ");
+        printf("Selected Server IP: ");
         SetConsoleTextAttribute(hConsole, 7);
-        printf(ip.c_str());
+        printf(Selected_ip.c_str());
         SetConsoleTextAttribute(hConsole, 12);
-        printf(" Port: ");
+        printf(" Selected Server Port: ");
         SetConsoleTextAttribute(hConsole, 7);
-        printf(port.c_str());
+        printf(Selected_port.c_str());
         printf("\n");
         SetConsoleTextAttribute(hConsole, 10);
         printf("Enter command: ");
         SetConsoleTextAttribute(hConsole, 7);
         getline(cin, input);
         if (input == "Connect") {  
+            string ip = "None";
+            string port = "None";
             SetConsoleTextAttribute(hConsole, 12);
             printf("Enter IP Adress: ");
             SetConsoleTextAttribute(hConsole, 7);
@@ -225,12 +227,12 @@ int main()
                     port = "None"; 
                     SetConsoleTextAttribute(hConsole, 13);
                     printf("failed to connect!\n");
-                    NH.DisConnect();
+                    NH.DisConnect(SelectedServer);
                 }
                 else
                 {
-                    NH.SendDataType(1);
-                    NH.SendTypeList();
+                    NH.SendDataType(1,SelectedServer);
+                    NH.SendTypeList(SelectedServer);
                 }
             }
             else {
@@ -238,32 +240,26 @@ int main()
                 port = "None";
                 SetConsoleTextAttribute(hConsole, 13);
                 printf("failed to connect!\n");
-                NH.DisConnect();
+                NH.DisConnect(SelectedServer);
             }
         }
         if (input == "DefaultConnect") {
-            NH.DisConnect();
+            NH.DisConnect(SelectedServer);
             system("cls");
             if (NH.DefaultInitConnect()) {
-                ip = NH.getIP();
-                port = NH.getPort();
-                NH.SendDataType(1);
-                NH.SendTypeList();
+                NH.SendDataType(1, SelectedServer);
+                NH.SendTypeList(SelectedServer);
             }
             else {
-                ip = "None";
-                port = "None";
                 SetConsoleTextAttribute(hConsole, 13);
                 printf("failed to connect!\n");
-                NH.DisConnect();
+                NH.DisConnect(SelectedServer);
             }
             continue;
         }
         else if (input == "Disconnect") {
-            ip = "None";
-            port = "None";
-            NH.SendDataType("Disconnect");
-            NH.DisConnect();
+            NH.SendDataType("Disconnect", SelectedServer);
+            NH.DisConnect(SelectedServer);
         }
         else if (input == "Help") {
             system("cls");
@@ -285,11 +281,11 @@ int main()
             printf("Enter message: ");
             SetConsoleTextAttribute(hConsole, 7);
             getline(cin, input);
-            NH.SendDataType("ConsoleMessage");
-            NH.SendDataT<string>(input);
+            NH.SendDataType("ConsoleMessage", SelectedServer);
+            NH.SendDataT<string>(input, SelectedServer);
         }
         else if (input == "MessageBox") {
-            NH.SendDataType("RecvPopUp");
+            NH.SendDataType("RecvPopUp", SelectedServer);
 
             string title;
             string msg;
@@ -298,12 +294,12 @@ int main()
             printf("Box Message: ");
             getline(cin, msg);
 
-            NH.SendDataT<wstring>(s2ws(title+'\0'));
-            NH.SendDataT<wstring>(s2ws(msg + '\0'));
+            NH.SendDataT<wstring>(s2ws(title+'\0'), SelectedServer);
+            NH.SendDataT<wstring>(s2ws(msg + '\0'), SelectedServer);
             continue;
         }
         else if (input == "MessageBoxYN") {
-            NH.SendDataType("RecvPopUpYN");
+            NH.SendDataType("RecvPopUpYN", SelectedServer);
 
             string title;
             string msg;
@@ -312,23 +308,23 @@ int main()
             printf("Box Message: ");
             getline(cin, msg);
 
-            NH.SendDataT<wstring>(s2ws(title));
-            NH.SendDataT<wstring>(s2ws(msg));
+            NH.SendDataT<wstring>(s2ws(title), SelectedServer);
+            NH.SendDataT<wstring>(s2ws(msg), SelectedServer);
             continue;
         }
         else if (input == "CMD") {
-            NH.SendDataType("CMD");
+            NH.SendDataType("CMD", SelectedServer);
             SetConsoleTextAttribute(hConsole, 10);
             printf("Enter windows command: ");
             SetConsoleTextAttribute(hConsole, 7);
             getline(cin, input);
-            NH.SendDataT<string>(input);
+            NH.SendDataT<string>(input, SelectedServer);
         }
         else if (input == "DesktopFeed") {
-            DesktopThread = thread(DesktopFeedLoop);
+            DesktopThread = thread(DesktopFeedLoop, SelectedServer);
         }
         else if (input == "CamFeed") {
-            CamThread = thread(CamFeedLoop);
+            CamThread = thread(CamFeedLoop,SelectedServer);
         }
         else {
             system("cls");

