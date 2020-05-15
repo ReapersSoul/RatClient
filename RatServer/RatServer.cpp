@@ -84,7 +84,7 @@ void rcv(NamedSOCKET * ns) {
     INPUT in;
 
     while (true) {
-        NH.RecvDataType(&dt,ns);
+        NH.RecvDataType(&dt, ns);
         if (dt.Name == "MousePos") {
             in.type = INPUT_MOUSE;
             NH.RecvDataT<long>(&in.mi.dx,ns);
@@ -371,8 +371,11 @@ int main()
     NH.SetName("Server");
     NH.RecvFunct = &rcv;
     if (NH.DefaultInitConnect()) {
-        //system("pause");
+        while (NH.IsConnected())
+        {
+            Sleep(1);
+        }
     }
-
+    NH.~Multi_NetworkHandlerServer();
     return 0;
 }

@@ -17,6 +17,8 @@ class Multi_NetworkHandlerServer: public Multi_NetworkBase
 {
 public:
 
+	bool IsConnected();
+
 	std::vector<std::thread> ClientThreads;
 
 	void (*RecvFunct)(NamedSOCKET * ns);

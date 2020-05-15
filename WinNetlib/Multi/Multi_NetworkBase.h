@@ -270,11 +270,21 @@ public:
 		}
 	}
 
-	NamedSOCKET * FindSocket(std::string name) {
-		for (int i = 0; i < ConnectedSockets.size(); i++)
-		{
-			if (name == ConnectedSockets[i].name) {
-				return &ConnectedSockets[i];
+	NamedSOCKET * FindSocket(std::string s,bool IsName) {
+		if (IsName) {
+			for (int i = 0; i < ConnectedSockets.size(); i++)
+			{
+				if (s == ConnectedSockets[i].name) {
+					return &ConnectedSockets[i];
+				}
+			}
+		}
+		else {
+			for (int i = 0; i < ConnectedSockets.size(); i++)
+			{
+				if (s == ConnectedSockets[i].IP) {
+					return &ConnectedSockets[i];
+				}
 			}
 		}
 	}

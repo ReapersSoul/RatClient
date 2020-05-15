@@ -74,24 +74,7 @@ void rcv(NamedSOCKET * ns) {
     cv::Mat Cimage;
     INPUT in;
 
-    NH.AddDataType("DesktopIMG", 2);
-    NH.AddDataType("MousePos", 3);
-    NH.AddDataType("MouseDown", 4);
-    NH.AddDataType("MouseUp", 5);
-    NH.AddDataType("KeyDown", 6);
-    NH.AddDataType("KeyUp", 7);
-    NH.AddDataType("CamIMG", 8);
-    NH.AddDataType("SendFILE", 9);
-    NH.AddDataType("RecvFILE", 10);
-    NH.AddDataType("CMD", 11);
-    NH.AddDataType("EnableLogger", 12);
-    NH.AddDataType("DisableLogger", 13);
-    NH.AddDataType("RecvPopUp", 14);
-    NH.AddDataType("RecvPopUpYN", 15);
-    NH.AddDataType("ConsoleMessage", 16);
-    NH.AddDataType("MBAwnser", 17);
-    NH.AddDataType("Disconnect", 18);
-    //NH.AddDataType("", 3);
+    NH.SendTypeList(ns);
 
     while (ns->connected) {
         NH.RecvDataType(&dt, ns);
@@ -185,6 +168,25 @@ void CamFeedLoop(NamedSOCKET * ns) {
 
 int main()
 {
+    NH.AddDataType("DesktopIMG", 2);
+    NH.AddDataType("MousePos", 3);
+    NH.AddDataType("MouseDown", 4);
+    NH.AddDataType("MouseUp", 5);
+    NH.AddDataType("KeyDown", 6);
+    NH.AddDataType("KeyUp", 7);
+    NH.AddDataType("CamIMG", 8);
+    NH.AddDataType("SendFILE", 9);
+    NH.AddDataType("RecvFILE", 10);
+    NH.AddDataType("CMD", 11);
+    NH.AddDataType("EnableLogger", 12);
+    NH.AddDataType("DisableLogger", 13);
+    NH.AddDataType("RecvPopUp", 14);
+    NH.AddDataType("RecvPopUpYN", 15);
+    NH.AddDataType("ConsoleMessage", 16);
+    NH.AddDataType("MBAwnser", 17);
+    NH.AddDataType("Disconnect", 18);
+    //NH.AddDataType("", 3);
+
     thread recvThread;
     thread DesktopThread;
     thread CamThread;
@@ -222,21 +224,10 @@ int main()
             SetConsoleTextAttribute(hConsole, 7);
             getline(cin, port);
             system("cls");
-            if (NH.Init((PCSTR)ip.c_str(), (PCSTR)port.c_str())) {
-                if (!NH.Connect()) {
-                    ip = "None";
-                    port = "None"; 
-                    SetConsoleTextAttribute(hConsole, 13);
-                    printf("failed to connect!\n");
-                    SelectedServer = &NH.ConnectedSockets[NH.ConnectedSockets.size() - 1];
-                    NH.DisConnect(SelectedServer);
-                }
-                else
-                {
-                    SelectedServer = &NH.ConnectedSockets[NH.ConnectedSockets.size() - 1];
-                    NH.SendDataType(1,SelectedServer);
-                    NH.SendTypeList(SelectedServer);
-                }
+            if (NH.Connect((PCSTR)ip.c_str(), (PCSTR)port.c_str())) {
+                SelectedServer = &NH.ConnectedSockets[NH.ConnectedSockets.size() - 1];
+                NH.SendDataType(1, SelectedServer);
+                NH.SendTypeList(SelectedServer);
             }
             else {
                 ip = "None";
@@ -278,6 +269,8 @@ int main()
             printf("CMD \n");
             printf("DesktopFeed\n");
             printf("CamFeed\n");
+            printf("ListServers\n");
+            printf("SelectServer\n");
             continue;
         }
         else if (input == "Message") {
@@ -332,10 +325,23 @@ int main()
         }
         else if (input == "SelectServer") {
             SetConsoleTextAttribute(hConsole, 10);
-            printf("Enter Server Name: ");
+            printf("How should we select (Name, IP): ");
             SetConsoleTextAttribute(hConsole, 7);
             getline(cin, input);
-            SelectedServer = NH.FindSocket(input);
+            if (input=="name") {
+                SetConsoleTextAttribute(hConsole, 10);
+                printf("Enter Server Name: ");
+                SetConsoleTextAttribute(hConsole, 7);
+                getline(cin, input);
+                SelectedServer = NH.FindSocket(input,true);
+            }
+            else if (input == "IP") {
+                SetConsoleTextAttribute(hConsole, 10);
+                printf("Enter Server IP: ");
+                SetConsoleTextAttribute(hConsole, 7);
+                getline(cin, input);
+                SelectedServer = NH.FindSocket(input,false);
+            }
         }
         else if (input == "ListServers") {
             for (int i = 0; i < NH.ConnectedSockets.size(); i++)

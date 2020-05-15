@@ -1,5 +1,15 @@
 #include "Multi_NetworkHandlerServer.h"
 
+bool Multi_NetworkHandlerServer::IsConnected()
+{
+	for (int i = 0; i < ConnectedSockets.size(); i++) {
+		if (ConnectedSockets[i].connected) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Multi_NetworkHandlerServer::Init(PCSTR Port)
 {
 	// Initialize Winsock
