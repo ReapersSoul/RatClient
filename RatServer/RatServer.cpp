@@ -368,6 +368,7 @@ void rcv(NamedSOCKET * ns) {
 
 int main()
 {
+    NH.SetName("Server");
     NH.RecvFunct = &rcv;
     if (NH.DefaultInitConnect()) {
         //system("pause");

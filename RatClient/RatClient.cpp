@@ -189,22 +189,23 @@ int main()
     thread DesktopThread;
     thread CamThread;
     string input = "";
-    string Selected_ip="None";
-    string Selected_port= "None";
 
+    NH.SetName("client");
     NH.RecvFunct = &rcv;
 
     while (true)
     {
-        SetConsoleTextAttribute(hConsole, 12);
-        printf("Selected Server IP: ");
-        SetConsoleTextAttribute(hConsole, 7);
-        printf(Selected_ip.c_str());
-        SetConsoleTextAttribute(hConsole, 12);
-        printf(" Selected Server Port: ");
-        SetConsoleTextAttribute(hConsole, 7);
-        printf(Selected_port.c_str());
-        printf("\n");
+        if (SelectedServer != nullptr) {
+            SetConsoleTextAttribute(hConsole, 12);
+            printf("Selected Server IP: ");
+            SetConsoleTextAttribute(hConsole, 7);
+            printf("%s", SelectedServer->IP.c_str());
+            SetConsoleTextAttribute(hConsole, 12);
+            printf(" Selected Server Port: ");
+            SetConsoleTextAttribute(hConsole, 7);
+            printf("%s", SelectedServer->PORT.c_str());
+            printf("\n");
+        }
         SetConsoleTextAttribute(hConsole, 10);
         printf("Enter command: ");
         SetConsoleTextAttribute(hConsole, 7);
@@ -227,10 +228,12 @@ int main()
                     port = "None"; 
                     SetConsoleTextAttribute(hConsole, 13);
                     printf("failed to connect!\n");
+                    SelectedServer = &NH.ConnectedSockets[NH.ConnectedSockets.size() - 1];
                     NH.DisConnect(SelectedServer);
                 }
                 else
                 {
+                    SelectedServer = &NH.ConnectedSockets[NH.ConnectedSockets.size() - 1];
                     NH.SendDataType(1,SelectedServer);
                     NH.SendTypeList(SelectedServer);
                 }
@@ -244,13 +247,14 @@ int main()
             }
         }
         if (input == "DefaultConnect") {
-            NH.DisConnect(SelectedServer);
             system("cls");
             if (NH.DefaultInitConnect()) {
+                SelectedServer = &NH.ConnectedSockets[NH.ConnectedSockets.size()-1];
                 NH.SendDataType(1, SelectedServer);
                 NH.SendTypeList(SelectedServer);
             }
             else {
+                SelectedServer = &NH.ConnectedSockets[NH.ConnectedSockets.size()-1];
                 SetConsoleTextAttribute(hConsole, 13);
                 printf("failed to connect!\n");
                 NH.DisConnect(SelectedServer);
@@ -325,6 +329,33 @@ int main()
         }
         else if (input == "CamFeed") {
             CamThread = thread(CamFeedLoop,SelectedServer);
+        }
+        else if (input == "SelectServer") {
+            SetConsoleTextAttribute(hConsole, 10);
+            printf("Enter Server Name: ");
+            SetConsoleTextAttribute(hConsole, 7);
+            getline(cin, input);
+            SelectedServer = NH.FindSocket(input);
+        }
+        else if (input == "ListServers") {
+            for (int i = 0; i < NH.ConnectedSockets.size(); i++)
+            {
+                SetConsoleTextAttribute(hConsole, 12);
+                printf("Server Name: ");
+                SetConsoleTextAttribute(hConsole, 11);
+                printf(NH.ConnectedSockets[i].name.c_str());
+                SetConsoleTextAttribute(hConsole, 12);
+                printf(" Server Ip: ");
+                SetConsoleTextAttribute(hConsole, 11);
+                printf(NH.ConnectedSockets[i].IP.c_str());
+                SetConsoleTextAttribute(hConsole, 12);
+                printf(" Server Port: ");
+                SetConsoleTextAttribute(hConsole, 11);
+                printf(NH.ConnectedSockets[i].PORT.c_str());
+                printf("\n");
+                SetConsoleTextAttribute(hConsole, 7);
+            }
+            continue;
         }
         else {
             system("cls");
