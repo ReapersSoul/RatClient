@@ -218,7 +218,6 @@ int main()
             printf("Enter Port: ");
             SetConsoleTextAttribute(hConsole, 7);
             getline(cin, port);
-            NH.DisConnect();
             system("cls");
             if (NH.Init((PCSTR)ip.c_str(), (PCSTR)port.c_str())) {
                 if (!NH.Connect()) {

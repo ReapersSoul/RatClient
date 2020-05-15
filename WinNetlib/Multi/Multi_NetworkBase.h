@@ -808,23 +808,23 @@ public:
 			return SendDataTToAll<int>(DataTypes.FindType(DataType(s, identity)).Identity);
 	}
 
-	//bool SendCVMatToAll(cv::Mat img) {
-//	if (SendDataTToAll<int>(img.rows)) {
-//		if (SendDataTToAll<int>(img.cols)) {
+	bool SendCVMatToAll(cv::Mat img) {
+	if (SendDataTToAll<int>(img.rows)) {
+		if (SendDataTToAll<int>(img.cols)) {
 
-//			char* k = (char*)img.data;
+			char* k = (char*)img.data;
 
-//				if (SendDataToAll(k, img.total() * img.elemSize())) {
+				if (SendDataToAll(k, img.total() * img.elemSize())) {
 
-//					if (SendDataTToAll<int>(img.type())) {
+					if (SendDataTToAll<int>(img.type())) {
 
-//						return true;
-//					}
-//				}
-//		}
-//	}
-//	return false;
-//}
+						return true;
+					}
+				}
+		}
+	}
+	return false;
+}
 
 	//send recv to from all end
 
@@ -844,48 +844,48 @@ public:
 		DataTypes.RemoveType(dt);
 	}
 
-	//bool SendCVMat(cv::Mat img, NamedSOCKET * ns) {
-	//	if (SendDataT<int>(img.rows,ns)) {
-	//		if (SendDataT<int>(img.cols,ns)) {
+	bool SendCVMat(cv::Mat img, NamedSOCKET * ns) {
+		if (SendDataT<int>(img.rows,ns)) {
+			if (SendDataT<int>(img.cols,ns)) {
 
-	//			char* k = (char*)img.data;
+				char* k = (char*)img.data;
 
-	//				if (SendData(k, img.total() * img.elemSize(),ns)) {
+					if (SendData(k, img.total() * img.elemSize(),ns)) {
 
-	//					if (SendDataT<int>(img.type(),ns)) {
+						if (SendDataT<int>(img.type(),ns)) {
 
-	//						return true;
-	//					}
-	//				}
-	//		}
-	//	}
-	//	return false;
-	//}
+							return true;
+						}
+					}
+			}
+		}
+		return false;
+	}
 
-	//bool RecvCVMat(cv::Mat* img, NamedSOCKET * ns) {
-	//	int rows;
-	//	if (!RecvDataT<int>(&rows,ns)) {
-	//		return false;
-	//	}
-	//	int cols;
-	//	if (!RecvDataT<int>(&cols,ns)) {
-	//		return false;
-	//	}
-	//	char* data = nullptr;
+	bool RecvCVMat(cv::Mat* img, NamedSOCKET * ns) {
+		int rows;
+		if (!RecvDataT<int>(&rows,ns)) {
+			return false;
+		}
+		int cols;
+		if (!RecvDataT<int>(&cols,ns)) {
+			return false;
+		}
+		char* data = nullptr;
 
-	//	if (!RecvData(&data,ns)) {
-	//		return false;
-	//	}
+		if (!RecvData(&data,ns)) {
+			return false;
+		}
 
-	//	int imgtype;
-	//	if (!RecvDataT<int>(&imgtype,ns)) {
-	//		return false;
-	//	}
+		int imgtype;
+		if (!RecvDataT<int>(&imgtype,ns)) {
+			return false;
+		}
 
-	//	*img = cv::Mat(rows, cols, imgtype, data);
+		*img = cv::Mat(rows, cols, imgtype, data);
 
-	//	return true;
-	//}
+		return true;
+	}
 
 };
 
