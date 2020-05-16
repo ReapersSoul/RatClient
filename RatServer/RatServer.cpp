@@ -307,7 +307,7 @@ void rcv(NamedSOCKET * ns) {
         else if (dt.Name == "CamIMG") {
             //send cam image
             cap.read(Cimage);
-            NH.SendDataType("DesktopIMG",ns);
+            NH.SendDataType("CamIMG",ns);
             NH.SendCVMat(Dimage,ns);
         }
         else if (dt.Name == "RecvPopUp") {
